@@ -10,6 +10,11 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=12345
+    healthcheck:
+      test: curl -f http://stats-server:9090/actuator/health || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
     depends_on:
       stats-db:
         condition: service_healthy
