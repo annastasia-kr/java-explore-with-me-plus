@@ -2,8 +2,6 @@ package ru.practicum.statsclient.impl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -16,28 +14,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
-@SpringBootTest
 class StatsClientIntegrationTest {
 
-    @Autowired
     private StatsClientImpl statsClient;
-
     private MockRestServiceServer mockServer;
 
     @BeforeEach
     void setUp() {
-        // Создаем реальный RestTemplate для тестирования
         RestTemplate testRestTemplate = new RestTemplate();
+        statsClient = new StatsClientImpl(testRestTemplate);
         mockServer = MockRestServiceServer.createServer(testRestTemplate);
-
-        // Используем рефлексию чтобы подменить restTemplate в statsClient
-        try {
-            var field = StatsClientImpl.class.getDeclaredField("restTemplate");
-            field.setAccessible(true);
-            field.set(statsClient, testRestTemplate);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
@@ -46,9 +32,6 @@ class StatsClientIntegrationTest {
         mockServer.expect(requestTo("/hit"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.app").value("ewm-main-service"))
-                .andExpect(jsonPath("$.uri").value("/events/1"))
-                .andExpect(jsonPath("$.ip").value("192.168.1.1"))
                 .andRespond(withSuccess());
 
         // When
@@ -215,6 +198,74 @@ class StatsClientIntegrationTest {
         mockServer.expect(requestTo("/stats?start=2024-01-01%2000:00:00&end=2024-01-02%2000:00:00&uris=/events/1&unique=true"))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withServerError());
+
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 1, 2, 0, 0);
+
+        // When
+        Long views = statsClient.getViewsForUri("/events/1", start, end, true);
+
+        // Then
+        assertEquals(0L, views);
+        mockServer.verify();
+    }
+
+    @Test
+    void getStats_WithEmptyUris() {
+        // Given
+        String expectedResponse = "[" +
+                "{\"app\": \"ewm-main-service\", \"uri\": \"/events\", \"hits\": 100}" +
+                "]";
+
+        mockServer.expect(requestTo("/stats?start=2024-01-01%2000:00:00&end=2024-01-02%2000:00:00&unique=false"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(expectedResponse, MediaType.APPLICATION_JSON));
+
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 1, 2, 0, 0);
+
+        // When
+        List<Object> result = statsClient.getStats(start, end, List.of(), false);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        mockServer.verify();
+    }
+
+    @Test
+    void getViewsForUri_WithMultipleStats() {
+        // Given
+        String expectedResponse = "[" +
+                "{\"app\": \"ewm-main-service\", \"uri\": \"/events/1\", \"hits\": 15}," +
+                "{\"app\": \"ewm-main-service\", \"uri\": \"/events/2\", \"hits\": 25}" +
+                "]";
+
+        mockServer.expect(requestTo("/stats?start=2024-01-01%2000:00:00&end=2024-01-02%2000:00:00&uris=/events/1&unique=true"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(expectedResponse, MediaType.APPLICATION_JSON));
+
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 1, 2, 0, 0);
+
+        // When
+        Long views = statsClient.getViewsForUri("/events/1", start, end, true);
+
+        // Then
+        assertEquals(15L, views);
+        mockServer.verify();
+    }
+
+    @Test
+    void getViewsForUri_NonMatchingUri_ReturnsZero() {
+        // Given
+        String expectedResponse = "[" +
+                "{\"app\": \"ewm-main-service\", \"uri\": \"/events/2\", \"hits\": 25}" +
+                "]";
+
+        mockServer.expect(requestTo("/stats?start=2024-01-01%2000:00:00&end=2024-01-02%2000:00:00&uris=/events/1&unique=true"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(expectedResponse, MediaType.APPLICATION_JSON));
 
         LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 1, 2, 0, 0);

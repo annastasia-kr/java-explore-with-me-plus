@@ -5,17 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.statsclient.StatsClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 public class StatsClientImpl implements StatsClient {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Logger log = LoggerFactory.getLogger(StatsClientImpl.class);
@@ -23,10 +23,25 @@ public class StatsClientImpl implements StatsClient {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    public StatsClientImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
+    // Конструктор с одним параметром (для тестов)
+    public StatsClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.findAndRegisterModules();
+    }
+
+    // Конструктор без параметров (для обычного использования)
+    public StatsClientImpl() {
+        this.restTemplate = new RestTemplate();
+        this.restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("http://stats-server:9090"));
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.findAndRegisterModules();
+    }
+
+    // Конструктор с двумя параметрами (если нужен)
+    public StatsClientImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -43,8 +58,7 @@ public class StatsClientImpl implements StatsClient {
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.debug("Hit successfully saved: app={}, uri={}, ip={}", app, uri, ip);
             } else {
-                log.error("Failed to save hit. Status: {}, Body: {}",
-                        response.getStatusCode(), response.getBody());
+                log.error("Failed to save hit. Status: {}", response.getStatusCode());
             }
         } catch (Exception e) {
             log.error("Error while saving hit: {}", e.getMessage());
@@ -71,17 +85,17 @@ public class StatsClientImpl implements StatsClient {
                 urlBuilder.append("&unique={unique}");
             }
 
-            ResponseEntity<String> response = restTemplate.getForEntity(
-                    urlBuilder.toString(), String.class, parameters);
+            ResponseEntity<Object[]> response = restTemplate.getForEntity(
+                    urlBuilder.toString(), Object[].class, parameters);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(response.getBody(), new TypeReference<List<Object>>() {});
+                return List.of(response.getBody());
             }
         } catch (Exception e) {
             log.error("Error while getting stats: {}", e.getMessage());
         }
 
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override
