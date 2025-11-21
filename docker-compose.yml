@@ -1,14 +1,21 @@
+version: '3.8'
 services:
   stats-server:
+    image: practicumstats/stats-server:latest
+    container_name: stats-server
     ports:
       - "9090:9090"
-
-  stats-db:
-    image: postgres:16.1
+    environment:
+      - SERVER_PORT=9090
 
   ewm-service:
+    build:
+      context: ./stat_svc_client
+      dockerfile: Dockerfile
+    container_name: ewm-service
     ports:
       - "8080:8080"
-
-  ewm-db:
-    image: postgres:16.1
+    environment:
+      - STATS_SERVER_URL=http://stats-server:9090
+    depends_on:
+      - stats-server
