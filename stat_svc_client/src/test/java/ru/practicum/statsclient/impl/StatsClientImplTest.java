@@ -61,12 +61,10 @@ class StatsClientIntegrationTest {
     @Test
     void getStats_Integration_Success() {
         // Given
-        String expectedResponse = """
-            [
-                {"app": "ewm-main-service", "uri": "/events/1", "hits": 10},
-                {"app": "ewm-main-service", "uri": "/events/2", "hits": 5}
-            ]
-            """;
+        String expectedResponse = "[" +
+                "{\"app\": \"ewm-main-service\", \"uri\": \"/events/1\", \"hits\": 10}," +
+                "{\"app\": \"ewm-main-service\", \"uri\": \"/events/2\", \"hits\": 5}" +
+                "]";
 
         mockServer.expect(requestTo("/stats?start=2024-01-01%2000:00:00&end=2024-01-02%2000:00:00&uris=/events/1,/events/2&unique=true"))
                 .andExpect(method(HttpMethod.GET))
@@ -139,11 +137,9 @@ class StatsClientIntegrationTest {
     @Test
     void getViewsForUri_Integration_Success() {
         // Given
-        String expectedResponse = """
-            [
-                {"app": "ewm-main-service", "uri": "/events/1", "hits": 15}
-            ]
-            """;
+        String expectedResponse = "[" +
+                "{\"app\": \"ewm-main-service\", \"uri\": \"/events/1\", \"hits\": 15}" +
+                "]";
 
         mockServer.expect(requestTo("/stats?start=2024-01-01%2000:00:00&end=2024-01-02%2000:00:00&uris=/events/1&unique=true"))
                 .andExpect(method(HttpMethod.GET))
