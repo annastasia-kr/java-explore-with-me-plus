@@ -2,10 +2,10 @@ package ru.practicum.statsclient.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import ru.practicum.statsclient.StatsClient;
 
@@ -15,14 +15,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
+@Component
 public class StatsClientImpl implements StatsClient {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final Logger log = LoggerFactory.getLogger(StatsClientImpl.class);
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+
+    public StatsClientImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.findAndRegisterModules();
+    }
 
     @Override
     public void saveHit(String app, String uri, String ip) {
@@ -70,7 +75,7 @@ public class StatsClientImpl implements StatsClient {
                     urlBuilder.toString(), String.class, parameters);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(response.getBody(), new TypeReference<>() {});
+                return objectMapper.readValue(response.getBody(), new TypeReference<List<Object>>() {});
             }
         } catch (Exception e) {
             log.error("Error while getting stats: {}", e.getMessage());

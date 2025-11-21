@@ -1,33 +1,18 @@
 package ru.practicum.statsclient.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-import ru.practicum.statsclient.StatsClient;
-import ru.practicum.statsclient.impl.StatsClientImpl;
 
 @Configuration
-public class StatsClientConfig {
+public class RestTemplateConfig {
 
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplateBuilder()
                 .uriTemplateHandler(new DefaultUriBuilderFactory("http://stats-server:9090"))
                 .build();
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.findAndRegisterModules();
-        return mapper;
-    }
-
-    @Bean
-    public StatsClient statsClient(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        return new StatsClientImpl(restTemplate, objectMapper);
     }
 }

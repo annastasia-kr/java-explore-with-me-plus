@@ -1,14 +1,13 @@
 package ru.practicum.statsclient;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 
-@Component
-@RequiredArgsConstructor
 public class StatsClientHelper {
     private final StatsClient statsClient;
+
+    public StatsClientHelper(StatsClient statsClient) {
+        this.statsClient = statsClient;
+    }
 
     public void recordEventView(String app, String uri, String ip) {
         statsClient.saveHit(app, uri, ip);
