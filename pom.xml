@@ -29,6 +29,12 @@
                     <configuration>
                         <source>11</source>
                         <target>11</target>
+                        <showWarnings>true</showWarnings>
+                        <showDeprecation>true</showDeprecation>
+                        <!-- Отключаем предупреждения о системных модулях -->
+                        <compilerArgs>
+                            <arg>-Xlint:-module</arg>
+                        </compilerArgs>
                     </configuration>
                 </plugin>
             </plugins>
