@@ -1,9 +1,15 @@
 package ru.practicum.statsclient;
 
+import ru.practicum.statsclient.impl.StatsClientImpl;
+
 import java.time.LocalDateTime;
 
 public class StatsClientHelper {
     private final StatsClient statsClient;
+
+    public StatsClientHelper() {
+        this.statsClient = new StatsClientImpl();
+    }
 
     public StatsClientHelper(StatsClient statsClient) {
         this.statsClient = statsClient;
@@ -19,9 +25,8 @@ public class StatsClientHelper {
 
     public Long getEventViews(Long eventId, LocalDateTime eventDate) {
         String eventUri = "/events/" + eventId;
-        LocalDateTime start = eventDate != null ? eventDate : LocalDateTime.now().minusYears(1);
+        LocalDateTime start = (eventDate != null) ? eventDate : LocalDateTime.now().minusYears(1);
         LocalDateTime end = LocalDateTime.now();
-
         return statsClient.getViewsForUri(eventUri, start, end, true);
     }
 

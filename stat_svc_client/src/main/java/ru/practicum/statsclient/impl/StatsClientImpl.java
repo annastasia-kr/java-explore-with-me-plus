@@ -11,10 +11,7 @@ import ru.practicum.statsclient.StatsClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StatsClientImpl implements StatsClient {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -23,14 +20,7 @@ public class StatsClientImpl implements StatsClient {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    // Конструктор с одним параметром (для тестов)
-    public StatsClientImpl(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.findAndRegisterModules();
-    }
-
-    // Конструктор без параметров (для обычного использования)
+    // Конструктор по умолчанию
     public StatsClientImpl() {
         this.restTemplate = new RestTemplate();
         this.restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("http://stats-server:9090"));
@@ -38,7 +28,14 @@ public class StatsClientImpl implements StatsClient {
         this.objectMapper.findAndRegisterModules();
     }
 
-    // Конструктор с двумя параметрами (если нужен)
+    // Конструктор для тестов с RestTemplate
+    public StatsClientImpl(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.findAndRegisterModules();
+    }
+
+    // Конструктор с обоими параметрами
     public StatsClientImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
@@ -56,18 +53,17 @@ public class StatsClientImpl implements StatsClient {
             ResponseEntity<Object> response = restTemplate.postForEntity("/hit", hitData, Object.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.debug("Hit successfully saved: app={}, uri={}, ip={}", app, uri, ip);
+                log.debug("Hit saved: app={}, uri={}, ip={}", app, uri, ip);
             } else {
                 log.error("Failed to save hit. Status: {}", response.getStatusCode());
             }
         } catch (Exception e) {
-            log.error("Error while saving hit: {}", e.getMessage());
+            log.error("Error saving hit: {}", e.getMessage());
         }
     }
 
     @Override
-    public List<Object> getStats(LocalDateTime start, LocalDateTime end,
-                                 List<String> uris, Boolean unique) {
+    public List<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         try {
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("start", start.format(FORMATTER));
@@ -85,16 +81,16 @@ public class StatsClientImpl implements StatsClient {
                 urlBuilder.append("&unique={unique}");
             }
 
-            ResponseEntity<Object[]> response = restTemplate.getForEntity(
-                    urlBuilder.toString(), Object[].class, parameters);
+            ResponseEntity<String> response = restTemplate.getForEntity(
+                    urlBuilder.toString(), String.class, parameters);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return List.of(response.getBody());
+                return objectMapper.readValue(response.getBody(), new TypeReference<>() {
+                });
             }
         } catch (Exception e) {
-            log.error("Error while getting stats: {}", e.getMessage());
+            log.error("Error getting stats: {}", e.getMessage());
         }
-
         return Collections.emptyList();
     }
 
@@ -102,19 +98,21 @@ public class StatsClientImpl implements StatsClient {
     public Long getViewsForUri(String uri, LocalDateTime start, LocalDateTime end, Boolean unique) {
         try {
             List<Object> stats = getStats(start, end, List.of(uri), unique);
+            return extractHitsFromStats(uri, stats);
+        } catch (Exception e) {
+            log.error("Error getting views for uri {}: {}", uri, e.getMessage());
+            return 0L;
+        }
+    }
 
-            for (Object stat : stats) {
-                if (stat instanceof Map) {
-                    Map<?, ?> statMap = (Map<?, ?>) stat;
-                    if (uri.equals(statMap.get("uri")) && statMap.get("hits") instanceof Number) {
-                        return ((Number) statMap.get("hits")).longValue();
-                    }
+    private Long extractHitsFromStats(String uri, List<Object> stats) {
+        for (Object stat : stats) {
+            if (stat instanceof Map<?, ?> statMap) {
+                if (uri.equals(statMap.get("uri")) && statMap.get("hits") instanceof Number) {
+                    return ((Number) statMap.get("hits")).longValue();
                 }
             }
-        } catch (Exception e) {
-            log.error("Error while getting views for uri {}: {}", uri, e.getMessage());
         }
-
         return 0L;
     }
 
@@ -124,7 +122,7 @@ public class StatsClientImpl implements StatsClient {
             ResponseEntity<String> response = restTemplate.getForEntity("/health", String.class);
             return response.getStatusCode().is2xxSuccessful();
         } catch (Exception e) {
-            log.warn("Stats service is not available: {}", e.getMessage());
+            log.warn("Stats service unavailable: {}", e.getMessage());
             return false;
         }
     }

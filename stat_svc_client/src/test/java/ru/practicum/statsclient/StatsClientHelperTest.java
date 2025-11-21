@@ -27,44 +27,24 @@ class StatsClientHelperTest {
 
     @Test
     void recordEventView_ShouldCallSaveHit() {
-        // Given
-        String app = "ewm-main-service";
-        String uri = "/events/1";
-        String ip = "192.168.1.1";
+        statsClientHelper.recordEventView("app1", "/events/1", "192.168.1.1");
 
-        // When
-        statsClientHelper.recordEventView(app, uri, ip);
-
-        // Then
-        verify(statsClient, times(1)).saveHit(app, uri, ip);
+        verify(statsClient, times(1)).saveHit("app1", "/events/1", "192.168.1.1");
     }
 
     @Test
     void recordEventListViews_ShouldCallSaveHitWithEventsUri() {
-        // Given
-        String app = "ewm-main-service";
-        String ip = "192.168.1.1";
+        statsClientHelper.recordEventListViews("app1", "192.168.1.1");
 
-        // When
-        statsClientHelper.recordEventListViews(app, ip);
-
-        // Then
-        verify(statsClient, times(1)).saveHit(app, "/events", ip);
+        verify(statsClient, times(1)).saveHit("app1", "/events", "192.168.1.1");
     }
 
     @Test
     void getEventViews_ShouldCallGetViewsForUri() {
-        // Given
-        Long eventId = 1L;
-        LocalDateTime eventDate = LocalDateTime.now().minusDays(1);
+        when(statsClient.getViewsForUri(anyString(), any(), any(), eq(true))).thenReturn(10L);
 
-        when(statsClient.getViewsForUri(anyString(), any(), any(), eq(true)))
-                .thenReturn(10L);
+        Long views = statsClientHelper.getEventViews(1L, LocalDateTime.now().minusDays(1));
 
-        // When
-        Long views = statsClientHelper.getEventViews(eventId, eventDate);
-
-        // Then
         assertEquals(10L, views);
         verify(statsClient, times(1)).getViewsForUri(
                 eq("/events/1"), any(LocalDateTime.class), any(LocalDateTime.class), eq(true));
@@ -72,31 +52,18 @@ class StatsClientHelperTest {
 
     @Test
     void getEventViews_WithNullEventDate_ShouldUseDefaultStartDate() {
-        // Given
-        Long eventId = 1L;
+        when(statsClient.getViewsForUri(anyString(), any(), any(), eq(true))).thenReturn(5L);
 
-        when(statsClient.getViewsForUri(anyString(), any(), any(), eq(true)))
-                .thenReturn(5L);
+        Long views = statsClientHelper.getEventViews(1L, null);
 
-        // When
-        Long views = statsClientHelper.getEventViews(eventId, null);
-
-        // Then
         assertEquals(5L, views);
-        verify(statsClient, times(1)).getViewsForUri(
-                anyString(), any(LocalDateTime.class), any(LocalDateTime.class), eq(true));
     }
 
     @Test
     void isStatsServiceAvailable_ShouldDelegateToClient() {
-        // Given
         when(statsClient.isAvailable()).thenReturn(true);
 
-        // When
-        boolean available = statsClientHelper.isStatsServiceAvailable();
-
-        // Then
-        assertTrue(available);
+        assertTrue(statsClientHelper.isStatsServiceAvailable());
         verify(statsClient, times(1)).isAvailable();
     }
 }
