@@ -1,6 +1,5 @@
 package ru.practicum.statsclient.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,6 @@ public class StatsClientImpl implements StatsClient {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    // Конструктор по умолчанию
     public StatsClientImpl() {
         this.restTemplate = new RestTemplate();
         this.restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("http://stats-server:9090"));
@@ -28,14 +26,12 @@ public class StatsClientImpl implements StatsClient {
         this.objectMapper.findAndRegisterModules();
     }
 
-    // Конструктор для тестов с RestTemplate
     public StatsClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.findAndRegisterModules();
     }
 
-    // Конструктор с обоими параметрами
     public StatsClientImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
@@ -81,12 +77,11 @@ public class StatsClientImpl implements StatsClient {
                 urlBuilder.append("&unique={unique}");
             }
 
-            ResponseEntity<String> response = restTemplate.getForEntity(
-                    urlBuilder.toString(), String.class, parameters);
+            ResponseEntity<Object[]> response = restTemplate.getForEntity(
+                    urlBuilder.toString(), Object[].class, parameters);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(response.getBody(), new TypeReference<>() {
-                });
+                return Arrays.asList(response.getBody());
             }
         } catch (Exception e) {
             log.error("Error getting stats: {}", e.getMessage());
@@ -107,9 +102,13 @@ public class StatsClientImpl implements StatsClient {
 
     private Long extractHitsFromStats(String uri, List<Object> stats) {
         for (Object stat : stats) {
+            // Используем pattern matching вместо явного cast
             if (stat instanceof Map<?, ?> statMap) {
-                if (uri.equals(statMap.get("uri")) && statMap.get("hits") instanceof Number) {
-                    return ((Number) statMap.get("hits")).longValue();
+                Object statUri = statMap.get("uri");
+                Object hits = statMap.get("hits");
+
+                if (uri.equals(statUri) && hits instanceof Number) {
+                    return ((Number) hits).longValue();
                 }
             }
         }
