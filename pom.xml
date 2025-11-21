@@ -31,7 +31,6 @@
                         <target>11</target>
                         <showWarnings>true</showWarnings>
                         <showDeprecation>true</showDeprecation>
-                        <!-- Отключаем предупреждения о системных модулях -->
                         <compilerArgs>
                             <arg>-Xlint:-module</arg>
                         </compilerArgs>
@@ -40,4 +39,14 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <!-- Профиль check -->
+    <profiles>
+        <profile>
+            <id>check</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
 </project>
