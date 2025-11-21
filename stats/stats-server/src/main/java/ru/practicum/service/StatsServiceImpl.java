@@ -21,7 +21,7 @@ import static ru.practicum.mapper.HitMapper.toHitDto;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class StatsServiceImpl implements StatsService{
+public class StatsServiceImpl implements StatsService {
 
     private final StatsRepository statsRepository;
 

@@ -23,6 +23,7 @@ public interface StatsRepository extends JpaRepository<Hit, Long> {
             @Param("end") LocalDateTime end,
             @Param("uris") List<String> uris
     );
+
     @Query(value = """
         SELECT new ru.practicum.StatsDto(app, uri, COUNT(ip) AS hits)
         FROM Hit

@@ -1,10 +1,11 @@
-version: "3.8"
-
 services:
   stats-server:
     container_name: stats-server
     ports:
       - "9090:9090"
+    build:
+      context: ./stats-service
+      dockerfile: Dockerfile
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres

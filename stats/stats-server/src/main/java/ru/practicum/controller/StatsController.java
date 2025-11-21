@@ -22,7 +22,7 @@ public class StatsController {
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
-    public HitDto create(@RequestBody @Valid HitDto hitDto){
+    public HitDto create(@RequestBody @Valid HitDto hitDto) {
         return statsService.create(hitDto);
     }
 

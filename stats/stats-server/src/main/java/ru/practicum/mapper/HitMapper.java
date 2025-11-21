@@ -7,7 +7,9 @@ import java.time.LocalDateTime;
 
 public class HitMapper {
 
-    private HitMapper() {}
+    private HitMapper() {
+
+    }
 
     public static Hit toHit(HitDto hitDto) {
         return Hit.builder()
