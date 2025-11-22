@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -140,7 +141,10 @@ class StatsClientIntegrationTest {
 
     @Test
     void extractHitsFromStats_WithNullUriInStat_ShouldReturnZero() {
-        Map<String, Object> stat = createStatMap("service1", null, 10); // null uri
+        Map<String, Object> stat = new HashMap<>();
+        stat.put("app", "service1");
+        stat.put("uri", null); // null uri
+        stat.put("hits", 10);
         List<Object> stats = List.of(stat);
 
         Long result = extractHitsForUri("/events/1", stats);
@@ -149,7 +153,34 @@ class StatsClientIntegrationTest {
 
     @Test
     void extractHitsFromStats_WithNullHitsInStat_ShouldReturnZero() {
-        Map<String, Object> stat = createStatMap("service1", "/events/1", null); // null hits
+        Map<String, Object> stat = new HashMap<>();
+        stat.put("app", "service1");
+        stat.put("uri", "/events/1");
+        stat.put("hits", null); // null hits
+        List<Object> stats = List.of(stat);
+
+        Long result = extractHitsForUri("/events/1", stats);
+        assertEquals(0L, result);
+    }
+
+    @Test
+    void extractHitsFromStats_WithMissingUriField_ShouldReturnZero() {
+        Map<String, Object> stat = new HashMap<>();
+        stat.put("app", "service1");
+        stat.put("hits", 10);
+        // Нет поля "uri"
+        List<Object> stats = List.of(stat);
+
+        Long result = extractHitsForUri("/events/1", stats);
+        assertEquals(0L, result);
+    }
+
+    @Test
+    void extractHitsFromStats_WithMissingHitsField_ShouldReturnZero() {
+        Map<String, Object> stat = new HashMap<>();
+        stat.put("app", "service1");
+        stat.put("uri", "/events/1");
+        // Нет поля "hits"
         List<Object> stats = List.of(stat);
 
         Long result = extractHitsForUri("/events/1", stats);
@@ -177,10 +208,10 @@ class StatsClientIntegrationTest {
     }
 
     private Map<String, Object> createStatMap(String app, String uri, Object hits) {
-        return Map.of(
-                "app", app,
-                "uri", uri,
-                "hits", hits
-        );
+        Map<String, Object> stat = new HashMap<>();
+        stat.put("app", app);
+        stat.put("uri", uri);
+        stat.put("hits", hits);
+        return stat;
     }
 }
