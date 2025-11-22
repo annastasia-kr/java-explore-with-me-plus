@@ -12,8 +12,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 
 class StatsClientIntegrationTest {
 
@@ -78,6 +81,23 @@ class StatsClientIntegrationTest {
                 .andRespond(withServerError());
 
         assertFalse(statsClient.isAvailable());
+        mockServer.verify();
+    }
+
+    @Test
+    void getViewsForUri_Integration_Success() {
+        String expectedResponse = "[{\"app\":\"ewm-main-service\",\"uri\":\"/events/1\",\"hits\":15}]";
+
+        mockServer.expect(requestTo("http://test-server:9090/stats?start=2024-01-01%2000:00:00&end=2024-01-02%2000:00:00&uris=/events/1&unique=true"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(expectedResponse, MediaType.APPLICATION_JSON));
+
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 1, 2, 0, 0);
+
+        Long views = statsClient.getViewsForUri("/events/1", start, end, true);
+
+        assertEquals(15L, views);
         mockServer.verify();
     }
 }
