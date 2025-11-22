@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class StatsDto {
 
     @NotBlank(message = "App must not be blank")
