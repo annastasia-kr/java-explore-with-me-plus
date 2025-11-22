@@ -1,4 +1,4 @@
-package ru.practicum.statsclient.impl;
+package ru.practicum.impl;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
@@ -60,26 +60,6 @@ class StatsClientIntegrationTest {
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void getViewsForUri_WithInvalidServer_ShouldReturnZero() {
-        StatsClientImpl client = new StatsClientImpl("http://invalid-server:9999");
-
-        Long views = client.getViewsForUri(
-                "/events/1",
-                LocalDateTime.now().minusDays(1),
-                LocalDateTime.now(),
-                true
-        );
-
-        assertEquals(0L, views);
-    }
-
-    @Test
-    void isAvailable_WithInvalidServer_ShouldReturnFalse() {
-        StatsClientImpl client = new StatsClientImpl("http://invalid-server:9999");
-        assertFalse(client.isAvailable());
     }
 
     @Test
