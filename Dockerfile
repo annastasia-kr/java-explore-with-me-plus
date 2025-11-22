@@ -2,11 +2,9 @@ FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-# Копируем JAR файл
-COPY target/*.jar app.jar
+# Копируем собранный JAR
+COPY target/stats-client-0.0.1-SNAPSHOT.jar app.jar
 
-# Указываем порт
 EXPOSE 8080
 
-# Запускаем приложение
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
