@@ -1,0 +1,24 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:h2:mem:stat
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      adjust-dates-to-context-time-zone: false
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+server:
+  port: 9090
+
+logging:
+  level:
+    com.fasterxml.jackson: DEBUG
+    org.springframework.web: DEBUG
