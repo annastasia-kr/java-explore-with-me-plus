@@ -2,11 +2,10 @@ package ru.practicum;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
-@Getter
-@Setter
-@Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class StatsDto {
@@ -18,6 +17,7 @@ public class StatsDto {
     private String uri;
 
     @NotNull(message = "Hits must not be null")
+    @Positive
     private Long hits;
 
 }

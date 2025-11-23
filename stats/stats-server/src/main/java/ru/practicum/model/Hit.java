@@ -9,7 +9,6 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -31,8 +30,10 @@ public class Hit {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Hit hit = (Hit) o;
         return Objects.equals(id, hit.id);
     }

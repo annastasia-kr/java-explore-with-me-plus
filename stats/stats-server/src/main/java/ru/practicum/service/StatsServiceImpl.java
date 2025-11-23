@@ -42,9 +42,8 @@ public class StatsServiceImpl implements StatsService {
 
         if (unique) {
             return statsRepository.findUniqueStatsByUrisAndTimestampBetween(start, end, uris);
-        } else {
-            return statsRepository.findStatsByUrisAndTimestampBetween(start, end, uris);
         }
+        return statsRepository.findStatsByUrisAndTimestampBetween(start, end, uris);
     }
 
 }
