@@ -1,6 +1,8 @@
 package ru.practicum.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -19,8 +21,9 @@ public class StatsClientImpl implements StatsClient {
     private final RestClient restClient;
     private final String baseUrl;
 
+    @Autowired
     public StatsClientImpl() {
-        this("http://stats-server:9090");
+        this("${stats-server.url}");
     }
 
     public StatsClientImpl(String baseUrl) {
