@@ -3,12 +3,12 @@ package ru.practicum.compilations.dto;
 import lombok.Data;
 import ru.practicum.events.dto.EventShortDto;
 
-import java.util.List;
+import java.util.Collection;
 
 @Data
 public class CompilationDto {
     private Long id;
     private Boolean pinned;
     private String title;
-    private List<EventShortDto> events;
+    private Collection<EventShortDto> events;
 }

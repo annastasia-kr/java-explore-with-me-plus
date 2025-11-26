@@ -1,16 +1,13 @@
 package ru.practicum.categories.mapper;
 
-
-import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
 import ru.practicum.categories.dto.CategoryDto;
+import ru.practicum.categories.dto.NewCategoryDto;
 import ru.practicum.categories.model.Category;
 
-@UtilityClass
-public class CategoryMapper {
-    public static CategoryDto toCategoryDto(Category category) {
-        CategoryDto dto = new CategoryDto();
-        dto.setId(category.getId());
-        dto.setName(category.getName());
-        return dto;
-    }
+@Mapper(componentModel = "spring")
+public interface CategoryMapper {
+    CategoryDto toCategoryDto(Category category);
+
+    Category toCategory(NewCategoryDto category);
 }

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.events.model.Event;
 
-import java.util.List;
+import java.util.Collection;
 
 @Getter
 @Setter
@@ -19,8 +19,4 @@ public class Compilation {
     private Boolean pinned;
 
     private String title;
-
-    @OneToMany(mappedBy = "compilation_id")
-    private List<Event> events;
-
 }
