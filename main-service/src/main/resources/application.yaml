@@ -3,7 +3,7 @@ spring:
     name: main-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/ewm-db
     username: postgres
     password: 12345
     driver-class-name: org.postgresql.Driver
@@ -24,3 +24,6 @@ logging:
     org.springframework.transaction: INFO
     org.springframework.transaction.interceptor: TRACE
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
+
+stats-server:
+  url: http://stats-server:9090
