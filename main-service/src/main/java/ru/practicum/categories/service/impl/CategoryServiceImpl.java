@@ -14,7 +14,7 @@ import ru.practicum.categories.model.Category;
 import ru.practicum.categories.repository.CategoryRepository;
 import ru.practicum.categories.service.CategoryService;
 import ru.practicum.events.repository.EventRepository;
-import ru.practicum.exception.DatabaseConstraintException;
+import ru.practicum.exception.DataConflictException;
 import ru.practicum.exception.NotFoundException;
 
 import java.util.List;
@@ -55,7 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (repository.existsByName(newCategory.getName())) {
             log.error("Категория с name={} уже существует", newCategory.getName());
-            throw new DatabaseConstraintException(
+            throw new DataConflictException(
                     String.format("Категория с name=%s уже существует", newCategory.getName()));
         }
 
@@ -71,7 +71,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         if (eventRepository.existsByCategoryId(catId)) {
             log.error("Категория с id={} связана с событиями", catId);
-            throw new DatabaseConstraintException(String.format("Категория с id=%s связана с событиями", catId));
+            throw new DataConflictException(String.format("Категория с id=%s связана с событиями", catId));
         }
 
         repository.deleteById(catId);
@@ -88,7 +88,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (repository.existsByNameAndIdNot(o.getName(), catId)) {
             log.error("Категория с name={} уже существует", o.getName());
-            throw new DatabaseConstraintException(String.format("Категория с name=%s уже существует", o.getName()));
+            throw new DataConflictException(String.format("Категория с name=%s уже существует", o.getName()));
         }
 
         existedCategory.setName(o.getName());
