@@ -13,5 +13,5 @@ public class NewCompilationDto {
     @Size(min = 1, max = 50)
     private String title;
 
-    private List<Integer> events;
+    private List<Long> events;
 }

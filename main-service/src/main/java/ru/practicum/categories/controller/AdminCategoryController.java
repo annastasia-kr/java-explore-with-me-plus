@@ -1,6 +1,5 @@
 package ru.practicum.categories.controller;
 
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +24,14 @@ public class AdminCategoryController {
 
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@RequestParam @Positive Long catId) {
+    public void deleteById(@PathVariable @Positive Long catId) {
         service.deleteById(catId);
     }
 
     @PatchMapping("/{catId}")
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto updateById(@RequestParam @Positive Long catId,
-                           @RequestBody @Valid NewCategoryDto o) {
+    public CategoryDto updateById(@PathVariable @Positive Long catId,
+            @RequestBody @Valid NewCategoryDto o) {
         return service.updateById(catId, o);
     }
 }

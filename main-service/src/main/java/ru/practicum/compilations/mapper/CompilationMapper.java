@@ -1,20 +1,21 @@
 package ru.practicum.compilations.mapper;
 
-import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.practicum.compilations.dto.CompilationDto;
+import ru.practicum.compilations.dto.NewCompilationDto;
 import ru.practicum.compilations.model.Compilation;
 
-@UtilityClass
-public class CompilationMapper {
-    public static Compilation toCompilation(CompilationDto dto) {
-        Compilation o = new Compilation();
-        o.setTitle(dto.getTitle());
-        o.setPinned(dto.getPinned());
-        return o;
-    }
+@Mapper(componentModel = "spring")
+public interface CompilationMapper {
 
-    public static CompilationDto toCompilationDto(Compilation o) {
-        CompilationDto dto = new CompilationDto();
-        return dto;
-    }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "events", ignore = true)
+    Compilation toCompilation(CompilationDto compilation);
+
+    @Mapping(target = "id", ignore = true)
+    Compilation toCompilation(NewCompilationDto compilation);
+
+    @Mapping(target = "events", source = "events")
+    CompilationDto toCompilationDto(Compilation compilation);
 }

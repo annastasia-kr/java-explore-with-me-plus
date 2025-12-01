@@ -2,6 +2,9 @@ package ru.practicum.categories.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.categories.dto.CategoryDto;
@@ -29,7 +32,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> findAll(Integer from, Integer size) {
-        return repository.findAll().stream()
+        Pageable page = PageRequest.of(from / size, size);
+        return repository.findAll(page).stream()
                 .map(mapper::toCategoryDto)
                 .collect(Collectors.toList());
     }
@@ -51,7 +55,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (repository.existsByName(newCategory.getName())) {
             log.error("Категория с name={} уже существует", newCategory.getName());
-            throw new DatabaseConstraintException(String.format("Категория с name=%s уже существует", newCategory.getName()));
+            throw new DatabaseConstraintException(
+                    String.format("Категория с name=%s уже существует", newCategory.getName()));
         }
 
         return mapper.toCategoryDto(repository.save(newCategory));
@@ -81,7 +86,7 @@ public class CategoryServiceImpl implements CategoryService {
                     return new NotFoundException(String.format("Категория с id=%s не найдена", catId));
                 });
 
-        if (repository.existsByName(o.getName())) {
+        if (repository.existsByNameAndIdNot(o.getName(), catId)) {
             log.error("Категория с name={} уже существует", o.getName());
             throw new DatabaseConstraintException(String.format("Категория с name=%s уже существует", o.getName()));
         }
