@@ -3,12 +3,14 @@ package ru.practicum.events.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
+import ru.practicum.StatsDto;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.events.dto.*;
@@ -298,7 +300,7 @@ public class EventServiceImpl implements EventService {
     // TO DO
     @Override
     public Collection<EventDto> getEventsPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                                Boolean onlyAvailable, Sort sort, Integer from, Integer size) {
+                                                Boolean onlyAvailable, Sort sort, Integer from, Integer size, HttpServletRequest httpServletRequest) {
 
 
         if (rangeStart.isAfter(rangeEnd)) {
@@ -328,7 +330,7 @@ public class EventServiceImpl implements EventService {
 
         List<Event> events = typedQuery.getResultList();
 
-        //statsClient.saveHit("main-service", );
+        statsClient.saveHit("main-service", httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr());
 
         if (onlyAvailable) {
             return events.stream()
@@ -341,16 +343,30 @@ public class EventServiceImpl implements EventService {
                 .toList();
     }
 
-
     // TO DO
     @Override
-    public EventDto getEvent(Long eventId) {
+    public EventDto getEvent(Long eventId, HttpServletRequest httpServletRequest) {
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException("Event not found"));
         if (!event.getState().equals(StateEvent.PUBLISHED)) {
             throw new DataConflictException("Event must be published");
         }
+        statsClient.saveHit("main-service", httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr());
 
+        LocalDateTime start = event.getPublishedOn() == null ? event.getCreatedOn() : event.getPublishedOn();
+
+        List<StatsDto> statistics = statsClient.getStats(start, LocalDateTime.now(),
+                List.of(httpServletRequest.getRequestURI()), true).stream()
+                .map(obj -> (StatsDto)obj)
+                .toList();
+
+        if (statistics.isEmpty()) {
+            event.setViews(0L);
+        } else {
+            event.setViews(statistics.get(0).getHits());
+        }
+
+        eventRepository.save(event);
         return toEventDto(event);
     }
 

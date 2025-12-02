@@ -22,7 +22,7 @@ public class AdminEventController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Collection<EventDto> getEventsByAdmin(@RequestParam(required = false) List<Long> users,
+    public Collection<EventDto> getEvents(@RequestParam(required = false) List<Long> users,
                                           @RequestParam(required = false) List<String>  states,
                                           @RequestParam(required = false) List<Long> categories,
                                           @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -31,6 +31,7 @@ public class AdminEventController {
                                                      LocalDateTime rangeEnd,
                                           @RequestParam(required = false, defaultValue = "0") Integer from,
                                           @RequestParam(required = false, defaultValue = "10") Integer size) {
+
         return eventService.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
@@ -38,6 +39,7 @@ public class AdminEventController {
     @ResponseStatus(HttpStatus.OK)
     public EventDto updateEvent(@PathVariable Long eventId,
                              @Valid @RequestBody UpdateEventDtoAdminRequest updateEventDtoAdminRequest) {
+
         return eventService.updateEventByAdmin(eventId, updateEventDtoAdminRequest);
     }
 }

@@ -1,5 +1,6 @@
 package ru.practicum.events.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,21 +25,23 @@ public class PublicEventController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Collection<EventDto> getEventsPublic(@RequestParam(required = false) String text,
-                                         @RequestParam(required = false) List<Long> categories,
-                                         @RequestParam(required = false) Boolean paid,
-                                         @RequestParam(required = false) @NotNull @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-                                         @RequestParam(required = false) @NotNull @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-                                         @RequestParam(defaultValue = "false", required = false) Boolean onlyAvailable,
-                                         @RequestParam(required = false) Sort sort,
-                                         @RequestParam(required = false, defaultValue = "0") Integer from,
-                                         @RequestParam(required = false, defaultValue = "10") Integer size) {
-        return eventService.getEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+                                                @RequestParam(required = false) List<Long> categories,
+                                                @RequestParam(required = false) Boolean paid,
+                                                @RequestParam(required = false) @NotNull @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+                                                @RequestParam(required = false) @NotNull @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+                                                @RequestParam(defaultValue = "false", required = false) Boolean onlyAvailable,
+                                                @RequestParam(required = false) Sort sort,
+                                                @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                @RequestParam(required = false, defaultValue = "10") Integer size,
+                                                HttpServletRequest httpServletRequest) {
+        return eventService.getEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, httpServletRequest);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EventDto getEvent(@PathVariable Long id) {
-        return eventService.getEvent(id);
+    public EventDto getEvent(@PathVariable Long id,
+                             HttpServletRequest httpServletRequest) {
+        return eventService.getEvent(id, httpServletRequest);
     }
 
 }
