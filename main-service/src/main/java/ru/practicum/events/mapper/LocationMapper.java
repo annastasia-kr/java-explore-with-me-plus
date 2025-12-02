@@ -1,19 +1,15 @@
 package ru.practicum.events.mapper;
 
-import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.practicum.events.dto.LocationDto;
 import ru.practicum.events.model.Location;
 
-@UtilityClass
-public class LocationMapper {
-    public static LocationDto toLocationDto(Location location) {
+@Mapper(componentModel = "spring")
+public interface LocationMapper {
 
-        LocationDto locationDto = new LocationDto(location.getLat(), location.getLon());
-        return locationDto;
-    }
+    LocationDto toLocationDto(Location location);
 
-    public static Location toLocation(LocationDto locationDto, Long id) {
-        Location location = new Location(id, locationDto.getLat(), locationDto.getLon());
-        return location;
-    }
+    @Mapping(target = "id", source = "id")
+    Location toLocation(LocationDto locationDto, Long id);
 }

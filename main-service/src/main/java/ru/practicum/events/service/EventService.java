@@ -3,9 +3,9 @@ package ru.practicum.events.service;
 import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.events.dto.*;
 import ru.practicum.events.model.enumeration.Sort;
-import ru.practicum.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.request.dto.EventRequestStatusUpdateDto;
-import ru.practicum.request.dto.RequestDto;
+import ru.practicum.requests.dto.EventRequestStatusUpdateResult;
+import ru.practicum.requests.dto.EventRequestStatusUpdateDto;
+import ru.practicum.requests.dto.RequestDto;
 
 import java.time.LocalDateTime;
 import java.util.Collection;

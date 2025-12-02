@@ -8,12 +8,12 @@ import ru.practicum.events.dto.EventDto;
 import ru.practicum.events.dto.EventShortDto;
 import ru.practicum.events.dto.NewEventDto;
 import ru.practicum.events.dto.UpdateEventDtoUserRequest;
-import ru.practicum.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.requests.dto.EventRequestStatusUpdateResult;
 import ru.practicum.events.service.EventService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import ru.practicum.request.dto.EventRequestStatusUpdateDto;
-import ru.practicum.request.dto.RequestDto;
+import ru.practicum.requests.dto.EventRequestStatusUpdateDto;
+import ru.practicum.requests.dto.RequestDto;
 
 import java.util.Collection;
 

@@ -3,9 +3,9 @@ package ru.practicum.events.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
-import ru.practicum.category.model.Category;
+import ru.practicum.categories.model.Category;
 import ru.practicum.events.model.enumeration.StateEvent;
-import ru.practicum.user.model.User;
+import ru.practicum.users.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

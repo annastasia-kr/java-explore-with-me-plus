@@ -1,86 +1,55 @@
 package ru.practicum.events.mapper;
 
-import lombok.experimental.UtilityClass;
-import ru.practicum.category.model.Category;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.NullValueCheckStrategy;
+import org.mapstruct.NullValueMappingStrategy;
+import ru.practicum.categories.mapper.CategoryMapper;
+import ru.practicum.categories.model.Category;
 import ru.practicum.events.dto.EventDto;
 import ru.practicum.events.dto.EventShortDto;
 import ru.practicum.events.dto.NewEventDto;
 import ru.practicum.events.model.Event;
 import ru.practicum.events.model.Location;
 import ru.practicum.events.model.enumeration.StateEvent;
-import ru.practicum.user.model.User;
+import ru.practicum.users.mapper.UserMapper;
+import ru.practicum.users.model.User;
 
 import java.time.LocalDateTime;
 
-import static ru.practicum.category.mapper.CategoryMapper.toCategoryDto;
-import static ru.practicum.events.mapper.LocationMapper.toLocationDto;
-import static ru.practicum.user.UserMapper.toUserShortDto;
+@Mapper(componentModel = "spring",
+        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL,
+        imports = {LocalDateTime.class, StateEvent.class},
+        uses = {CategoryMapper.class, UserMapper.class, LocationMapper.class})
+public interface EventMapper {
 
-@UtilityClass
-public class EventMapper {
+    @Mapping(target = "id", ignore = true)
+    @Mapping(source = "category", target = "category")
+    @Mapping(source = "initiator", target = "initiator")
+    @Mapping(source = "location", target = "location")
+    @Mapping(target = "createdOn", expression = "java(LocalDateTime.now())")
+    @Mapping(target = "confirmedRequests", constant = "0L")
+    @Mapping(target = "state", constant = "PENDING")
+    @Mapping(target = "views", constant = "0L")
+    @Mapping(target = "participantLimit", expression = "java(newEventDto.getParticipantLimit() == null ? 0L : newEventDto.getParticipantLimit())")
+    @Mapping(target = "requestModeration", expression = "java(newEventDto.getRequestModeration() == null ? true : newEventDto.getRequestModeration())")
+    Event toEvent(NewEventDto newEventDto, Category category, User initiator, Location location);
 
-    public static Event toEvent(NewEventDto newEventDto, Category category, User user, Location location) {
+    @Mapping(source = "category", target = "category")
+    @Mapping(source = "initiator", target = "initiator")
+    @Mapping(source = "location", target = "location")
+    EventDto toEventDto(Event event);
 
-        Event event = new Event();
-
-        event.setAnnotation(newEventDto.getAnnotation());
-        event.setTitle(newEventDto.getTitle());
-        event.setCategory(category);
-        event.setDescription(newEventDto.getDescription());
-        event.setCreatedOn(LocalDateTime.now());
-        event.setConfirmedRequests(0L);
-        event.setEventDate(newEventDto.getEventDate());
-        event.setInitiator(user);
-        event.setPaid(newEventDto.getPaid());
-        event.setParticipantLimit(newEventDto.getParticipantLimit() == null ? 0L : newEventDto.getParticipantLimit());
-        event.setRequestModeration(newEventDto.getRequestModeration() == null ? true : newEventDto.getRequestModeration());
-        event.setLocation(location);
-        event.setState(StateEvent.PENDING);
-        event.setViews(0L);
-
-        return event;
-    }
-
-    public static EventDto toEventDto(Event event) {
-
-        EventDto eventDto = new EventDto();
-
-        eventDto.setId(event.getId());
-        eventDto.setAnnotation(event.getAnnotation());
-        eventDto.setTitle(event.getTitle());
-        eventDto.setCategory(toCategoryDto(event.getCategory()));
-        eventDto.setDescription(event.getDescription());
-        eventDto.setCreatedOn(event.getCreatedOn());
-        eventDto.setConfirmedRequests(event.getConfirmedRequests());
-        eventDto.setEventDate(event.getEventDate());
-        eventDto.setInitiator(toUserShortDto(event.getInitiator()));
-        eventDto.setPaid(event.getPaid());
-        eventDto.setParticipantLimit(event.getParticipantLimit());
-        eventDto.setRequestModeration(event.getRequestModeration());
-        eventDto.setLocation(toLocationDto(event.getLocation()));
-        eventDto.setState(event.getState());
-        eventDto.setViews(event.getViews());
-
-        return eventDto;
-    }
-
-    public static EventShortDto toEventShortDto(Event event) {
-
-        EventShortDto eventShortDto = new EventShortDto();
-
-        eventShortDto.setId(event.getId());
-        eventShortDto.setAnnotation(event.getAnnotation());
-        eventShortDto.setTitle(event.getTitle());
-        eventShortDto.setCategory(toCategoryDto(event.getCategory()));
-        eventShortDto.setConfirmedRequests(event.getConfirmedRequests());
-        eventShortDto.setEventDate(event.getEventDate());
-        eventShortDto.setInitiator(toUserShortDto(event.getInitiator()));
-        eventShortDto.setPaid(event.getPaid());
-        eventShortDto.setParticipantLimit(event.getParticipantLimit());
-        eventShortDto.setViews(event.getViews());
-
-        return eventShortDto;
-
-    }
+    @Mapping(source = "category", target = "category")
+    @Mapping(source = "confirmedRequests", target = "confirmedRequests")
+    @Mapping(source = "initiator", target = "initiator")
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "annotation", target = "annotation")
+    @Mapping(source = "title", target = "title")
+    @Mapping(source = "eventDate", target = "eventDate")
+    @Mapping(source = "paid", target = "paid")
+    @Mapping(source = "participantLimit", target = "participantLimit")
+    @Mapping(source = "views", target = "views")
+    EventShortDto toEventShortDto(Event event);
 
 }

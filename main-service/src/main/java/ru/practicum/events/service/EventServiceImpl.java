@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
 import ru.practicum.StatsDto;
-import ru.practicum.category.model.Category;
-import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.categories.model.Category;
+import ru.practicum.categories.repository.CategoryRepository;
 import ru.practicum.events.dto.*;
+import ru.practicum.events.mapper.EventMapper;
+import ru.practicum.events.mapper.LocationMapper;
 import ru.practicum.events.model.Event;
 import ru.practicum.events.model.Location;
 import ru.practicum.events.model.enumeration.Sort;
@@ -21,25 +23,22 @@ import ru.practicum.events.model.enumeration.StateActionAdmin;
 import ru.practicum.events.model.enumeration.StateEvent;
 import ru.practicum.exception.*;
 import ru.practicum.exception.IllegalStateException;
-import ru.practicum.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.requests.dto.EventRequestStatusUpdateResult;
 import ru.practicum.events.repository.EventRepository;
 import ru.practicum.events.repository.LocationRepository;
-import ru.practicum.request.dto.EventRequestStatusUpdateDto;
-import ru.practicum.request.dto.RequestDto;
-import ru.practicum.request.model.Request;
-import ru.practicum.request.model.enumeration.RequestStatus;
-import ru.practicum.request.repository.RequestRepository;
-import ru.practicum.user.model.User;
-import ru.practicum.user.repository.UserRepository;
+import ru.practicum.requests.dto.EventRequestStatusUpdateDto;
+import ru.practicum.requests.dto.RequestDto;
+import ru.practicum.requests.mapper.RequestMapper;
+import ru.practicum.requests.model.Request;
+import ru.practicum.requests.model.enumeration.RequestStatus;
+import ru.practicum.requests.repository.RequestRepository;
+import ru.practicum.users.model.User;
+import ru.practicum.users.repository.UserRepository;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.*;
-
-import static ru.practicum.events.mapper.EventMapper.*;
-import static ru.practicum.events.mapper.LocationMapper.toLocation;
-import static ru.practicum.request.mapper.RequestMapper.toRequestDto;
 
 @Service
 @Slf4j
@@ -54,6 +53,9 @@ public class EventServiceImpl implements EventService {
     private final RequestRepository requestRepository;
     private final EntityManager entityManager;
     private final StatsClient statsClient;
+    private final EventMapper eventMapper;
+    private final LocationMapper locationMapper;
+    private final RequestMapper requestMapper;
 
     @Override
     public Collection<EventShortDto> getEventsByUserId(Long userId, Integer from, Integer size) {
@@ -61,7 +63,7 @@ public class EventServiceImpl implements EventService {
                 () -> new NotFoundException("User not found"));
         Pageable page = PageRequest.of(from / size, size);
         return eventRepository.findAllByInitiatorId(userId, page).stream()
-                .map(event -> toEventShortDto(event))
+                .map(eventMapper::toEventShortDto)
                 .toList();
     }
 
@@ -75,8 +77,8 @@ public class EventServiceImpl implements EventService {
         if (!newEventDto.getEventDate().isAfter(LocalDateTime.now().plusHours(2))) {
             new ValidationException("The event date must exceed the current timestamp + 2H");
         }
-        Event createdEvent = toEvent(newEventDto, findedCategory, findedUser, getEventLocation(newEventDto.getLocation()));
-        return toEventDto(eventRepository.save(createdEvent));
+        Event createdEvent = eventMapper.toEvent(newEventDto, findedCategory, findedUser, getEventLocation(newEventDto.getLocation()));
+        return eventMapper.toEventDto(eventRepository.save(createdEvent));
 
     }
 
@@ -84,7 +86,7 @@ public class EventServiceImpl implements EventService {
     public EventDto getEventById(Long userId, Long eventId) {
         userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("User not found"));
-        return toEventDto(eventRepository.findById(eventId).orElseThrow(
+        return eventMapper.toEventDto(eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException("Event not found")));
 
     }
@@ -131,7 +133,7 @@ public class EventServiceImpl implements EventService {
         if (updateEventDtoUserRequest.getTitle() != null) {
             event.setTitle(updateEventDtoUserRequest.getTitle());
         }
-        return toEventDto(eventRepository.save(event));
+        return eventMapper.toEventDto(eventRepository.save(event));
     }
 
     @Override
@@ -142,7 +144,7 @@ public class EventServiceImpl implements EventService {
             throw new AccessDeniedForUserException("Access denied: User is not an initiator");
         }
         return requestRepository.findAllByEventId(eventId).stream()
-                .map(request -> toRequestDto(request))
+                .map(requestMapper::toRequestDto)
                 .toList();
     }
 
@@ -194,10 +196,10 @@ public class EventServiceImpl implements EventService {
 
         EventRequestStatusUpdateResult eventRequestStatusUpdateResult = new EventRequestStatusUpdateResult(
                 confirmedRequests.stream()
-                        .map(req -> toRequestDto(req))
+                        .map(requestMapper::toRequestDto)
                         .toList(),
                 rejectedRequests.stream()
-                        .map(req -> toRequestDto(req))
+                        .map(requestMapper::toRequestDto)
                         .toList());
 
         return eventRequestStatusUpdateResult;
@@ -235,7 +237,7 @@ public class EventServiceImpl implements EventService {
         List<Event> events = typedQuery.getResultList();
 
         return events.stream()
-                .map(event -> toEventDto(event))
+                .map(eventMapper::toEventDto)
                 .toList();
     }
 
@@ -294,7 +296,7 @@ public class EventServiceImpl implements EventService {
         if (updateEventDtoAdminRequest.getRequestModeration() != null) {
             event.setRequestModeration(updateEventDtoAdminRequest.getRequestModeration());
         }
-        return toEventDto(eventRepository.save(event));
+        return eventMapper.toEventDto(eventRepository.save(event));
     }
 
     // TO DO
@@ -337,11 +339,11 @@ public class EventServiceImpl implements EventService {
         if (onlyAvailable) {
             return events.stream()
                     .filter(event -> event.getParticipantLimit() == 0 || event.getConfirmedRequests() < event.getParticipantLimit())
-                    .map(event -> toEventDto(event))
+                    .map(eventMapper::toEventDto)
                     .toList();
         }
         return events.stream()
-                .map(event -> toEventDto(event))
+                .map(eventMapper::toEventDto)
                 .toList();
     }
 
@@ -369,13 +371,13 @@ public class EventServiceImpl implements EventService {
         }
 
         eventRepository.save(event);
-        return toEventDto(event);
+        return eventMapper.toEventDto(event);
     }
 
     private Location getEventLocation(LocationDto locationDto) {
         Optional<Location> location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon());
         if(location.isEmpty()) {
-            return locationRepository.save(toLocation(locationDto, 0L));
+            return locationRepository.save(locationMapper.toLocation(locationDto, 0L));
         }
         return location.get();
     }
