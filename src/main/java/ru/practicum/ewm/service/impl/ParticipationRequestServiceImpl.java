@@ -14,6 +14,7 @@ import ru.practicum.ewm.repository.ParticipationRequestRepository;
 import ru.practicum.ewm.repository.UserRepository;
 import ru.practicum.ewm.service.ParticipationRequestService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     private final ParticipationRequestRepository requestRepository;
     private final UserRepository userRepository;
-    private final EventRepository eventRepository; // Используем EventRepository
+    private final EventRepository eventRepository;
     private final ParticipationRequestMapper requestMapper;
 
     @Override
@@ -50,7 +51,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
 
-        Event event = eventRepository.findById(eventId) // Используем EventRepository
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
         validateRequestCreation(userId, event);
@@ -60,12 +61,15 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                     throw new ConflictException("Запрос на участие уже существует");
                 });
 
+        // Создаем запрос и сразу устанавливаем дату создания
         ParticipationRequest request = ParticipationRequest.builder()
                 .event(event)
                 .requester(user)
                 .status(RequestStatus.PENDING)
+                .createdDate(LocalDateTime.now()) // Устанавливаем дату здесь
                 .build();
 
+        // Проверяем условия для авто-подтверждения
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             request.setStatus(RequestStatus.CONFIRMED);
         }
@@ -99,19 +103,20 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     }
 
     private void validateRequestCreation(Long userId, Event event) {
-        // Используем метод getInitiator() для проверки
+        // Проверяем, что инициатор не подает заявку на свое же событие
         if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictException("Инициатор события не может подать заявку на участие");
         }
 
+        // Проверяем, что событие опубликовано
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new ConflictException("Нельзя участвовать в неопубликованном событии");
         }
 
+        // Проверяем лимит участников
         if (event.getParticipantLimit() > 0) {
-            // Используем метод countConfirmedRequests из репозитория
-            Long confirmedRequests = eventRepository.countConfirmedRequests(event.getId());
-            if (confirmedRequests >= event.getParticipantLimit()) {
+            Long confirmedRequests = requestRepository.countConfirmedRequests(event.getId());
+            if (confirmedRequests != null && confirmedRequests >= event.getParticipantLimit()) {
                 throw new ConflictException("Достигнут лимит участников события");
             }
         }

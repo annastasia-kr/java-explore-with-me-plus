@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.ewm.EwmMainServiceApplication;
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
@@ -21,19 +23,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PrivateParticipationRequestController.class)
+@ContextConfiguration(classes = {EwmMainServiceApplication.class})
 class PrivateParticipationRequestControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private ParticipationRequestService participationRequestService;
 
     private ParticipationRequestDto requestDto;
-
-    PrivateParticipationRequestControllerTest(ObjectMapper ignoredObjectMapper, ParticipationRequestService participationRequestService) {
-        this.participationRequestService = participationRequestService;
-    }
 
     @BeforeEach
     void setUp() {
@@ -97,6 +99,15 @@ class PrivateParticipationRequestControllerTest {
     }
 
     @Test
+    void createParticipationRequest_WithInvalidEventId_Negative_ShouldReturnBadRequest() throws Exception {
+        mockMvc.perform(post("/users/{userId}/requests", 1L)
+                        .param("eventId", "-1"))
+                .andExpect(status().isBadRequest());
+
+        verify(participationRequestService, never()).createParticipationRequest(anyLong(), anyLong());
+    }
+
+    @Test
     void createParticipationRequest_WithConflict_ShouldReturnConflict() throws Exception {
         when(participationRequestService.createParticipationRequest(anyLong(), anyLong()))
                 .thenThrow(new ConflictException("Инициатор события не может подать заявку на участие"));
@@ -131,5 +142,25 @@ class PrivateParticipationRequestControllerTest {
                 .andExpect(jsonPath("$.status").value("NOT_FOUND"));
 
         verify(participationRequestService, times(1)).cancelRequest(1L, 999L);
+    }
+
+    @Test
+    void cancelRequest_WithConflict_ShouldReturnConflict() throws Exception {
+        when(participationRequestService.cancelRequest(anyLong(), anyLong()))
+                .thenThrow(new ConflictException("Запрос не принадлежит пользователю"));
+
+        mockMvc.perform(patch("/users/{userId}/requests/{requestId}/cancel", 1L, 2L))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value("CONFLICT"));
+
+        verify(participationRequestService, times(1)).cancelRequest(1L, 2L);
+    }
+
+    @Test
+    void createParticipationRequest_WithoutEventId_ShouldReturnBadRequest() throws Exception {
+        mockMvc.perform(post("/users/{userId}/requests", 1L))
+                .andExpect(status().isBadRequest());
+
+        verify(participationRequestService, never()).createParticipationRequest(anyLong(), anyLong());
     }
 }
