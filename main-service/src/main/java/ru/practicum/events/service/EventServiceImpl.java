@@ -303,7 +303,7 @@ public class EventServiceImpl implements EventService {
                                                 Boolean onlyAvailable, Sort sort, Integer from, Integer size, HttpServletRequest httpServletRequest) {
 
 
-        if (rangeStart.isAfter(rangeEnd)) {
+        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("RangeStart is not earlier than rangeEnd");
         }
 
@@ -322,7 +322,9 @@ public class EventServiceImpl implements EventService {
         if (!predicates.isEmpty()) {
             criteriaQuery.where(cb.and(predicates.toArray(new Predicate[0])));
         }
-        applySortValue(criteriaQuery, cb, root, sort);
+        if (sort != null) {
+            applySortValue(criteriaQuery, cb, root, sort);
+        }
 
         TypedQuery<Event> typedQuery = entityManager.createQuery(criteriaQuery);
         typedQuery.setFirstResult(from);

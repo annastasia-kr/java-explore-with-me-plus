@@ -2,6 +2,7 @@ package ru.practicum.events.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.events.dto.EventDto;
 import ru.practicum.events.dto.EventShortDto;
@@ -17,6 +18,7 @@ import ru.practicum.request.dto.RequestDto;
 import java.util.Collection;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping(path = "/users/{userId}/events")
 public class PrivateEventController {

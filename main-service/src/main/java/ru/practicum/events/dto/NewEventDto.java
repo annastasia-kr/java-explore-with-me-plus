@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,15 +17,18 @@ import java.time.LocalDateTime;
 public class NewEventDto {
 
     @NotBlank(message = "Annotation must not be blank")
+    @Size(min = 20, max = 2000)
     private String annotation;
 
     @NotBlank(message = "Title must not be blank")
+    @Size(min = 3, max = 120)
     private String title;
 
     @NotNull
     private Long category;
 
     @NotBlank(message = "Description must not be blank")
+    @Size(min = 20, max = 7000)
     private String description;
 
     @NotNull
