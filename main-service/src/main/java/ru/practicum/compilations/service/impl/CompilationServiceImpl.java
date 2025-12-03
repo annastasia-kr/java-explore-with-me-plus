@@ -34,7 +34,13 @@ public class CompilationServiceImpl implements CompilationService {
     public List<CompilationDto> findAll(Boolean pinned, Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size);
         return repository.findByPinned(pinned, page).stream()
-                .map(mapper::toCompilationDto)
+                .map(compilation -> {
+                    CompilationDto dto = mapper.toCompilationDto(compilation);
+                    if (compilation.getEvents() != null) {
+                        dto.setEvents(mapper.toEventShortDtoCollection(compilation.getEvents()));
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -42,7 +48,13 @@ public class CompilationServiceImpl implements CompilationService {
     public List<CompilationDto> findAll(Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size);
         return repository.findAll(page).stream()
-                .map(mapper::toCompilationDto)
+                .map(compilation -> {
+                    CompilationDto dto = mapper.toCompilationDto(compilation);
+                    if (compilation.getEvents() != null) {
+                        dto.setEvents(mapper.toEventShortDtoCollection(compilation.getEvents()));
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -54,7 +66,11 @@ public class CompilationServiceImpl implements CompilationService {
                     log.error("Подборка с id={} не найдена", compId);
                     return new NotFoundException(String.format("Подборка с id=%d не найдена", compId));
                 });
-        return mapper.toCompilationDto(compilation);
+        CompilationDto dto = mapper.toCompilationDto(compilation);
+        if (compilation.getEvents() != null) {
+            dto.setEvents(mapper.toEventShortDtoCollection(compilation.getEvents()));
+        }
+        return dto;
     }
 
     @Override
@@ -81,7 +97,11 @@ public class CompilationServiceImpl implements CompilationService {
             newCompilation.setEvents(events);
         }
 
-        return mapper.toCompilationDto(repository.save(newCompilation));
+        CompilationDto dto = mapper.toCompilationDto(repository.save(newCompilation));
+        if (newCompilation.getEvents() != null) {
+            dto.setEvents(mapper.toEventShortDtoCollection(newCompilation.getEvents()));
+        }
+        return dto;
     }
 
     @Override
@@ -111,6 +131,10 @@ public class CompilationServiceImpl implements CompilationService {
             List<Event> events = eventRepository.findAllById(o.getEvents());
             existedCompilation.setEvents(events);
         }
-        return mapper.toCompilationDto(existedCompilation);
+        CompilationDto dto = mapper.toCompilationDto(existedCompilation);
+        if (existedCompilation.getEvents() != null) {
+            dto.setEvents(mapper.toEventShortDtoCollection(existedCompilation.getEvents()));
+        }
+        return dto;
     }
 }
