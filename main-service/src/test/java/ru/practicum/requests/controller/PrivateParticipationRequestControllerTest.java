@@ -1,4 +1,4 @@
-package java.ru.practicum.requests.controller;
+package ru.practicum.requests.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,7 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.ewm.EwmMainServiceApplication;
+import ru.practicum.MainServiceApplication;
 import ru.practicum.requests.dto.ParticipationRequestDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PrivateParticipationRequestController.class)
-@ContextConfiguration(classes = {EwmMainServiceApplication.class})
+@ContextConfiguration(classes = {MainServiceApplication.class})
 class PrivateParticipationRequestControllerTest {
 
     @Autowired

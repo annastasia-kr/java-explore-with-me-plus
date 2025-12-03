@@ -34,7 +34,7 @@ class UserServiceImplTest {
     private UserMapper userMapper;
 
     @InjectMocks
-    private AdminUserServiceImpl adminUserService;
+    private UserServiceImpl adminUserService;
 
     private User user;
     private UserDto userDto;

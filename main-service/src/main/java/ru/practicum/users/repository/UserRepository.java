@@ -8,9 +8,8 @@ import ru.practicum.users.model.User;
 
 import java.util.List;
 import java.util.Optional;
-@SuppressWarnings("unused")
-public interface UserRepository extends JpaRepository<User, Long> {
 
+public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     @Query("SELECT u FROM User u WHERE " +

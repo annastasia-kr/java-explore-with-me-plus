@@ -1,5 +1,7 @@
 package ru.practicum.users.controller;
 
+import jakarta.validation.*;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,9 +12,6 @@ import ru.practicum.users.dto.NewUserRequest;
 import ru.practicum.users.dto.UserDto;
 import ru.practicum.users.service.UserService;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -20,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @Slf4j
-@SuppressWarnings("unused")
 public class AdminUserController {
 
     private final UserService userService;

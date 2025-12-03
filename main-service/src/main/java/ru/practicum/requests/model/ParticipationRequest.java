@@ -1,11 +1,11 @@
 package ru.practicum.requests.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.events.model.Event;
 import ru.practicum.users.enums.RequestStatus;
 import ru.practicum.users.model.User;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

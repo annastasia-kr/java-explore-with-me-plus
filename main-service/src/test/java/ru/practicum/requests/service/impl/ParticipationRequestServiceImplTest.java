@@ -1,4 +1,4 @@
-package java.ru.practicum.requests.service.impl;
+package ru.practicum.requests.service.impl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,12 +6,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.categories.model.Category;
+import ru.practicum.events.enums.EventState;
+import ru.practicum.events.model.Event;
 import ru.practicum.requests.dto.ParticipationRequestDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.requests.mapper.ParticipationRequestMapper;
-import ru.practicum.ewm.model.*;
 import ru.practicum.events.repository.EventRepository;
+import ru.practicum.requests.model.ParticipationRequest;
 import ru.practicum.requests.respository.ParticipationRequestRepository;
+import ru.practicum.users.enums.RequestStatus;
+import ru.practicum.users.model.User;
 import ru.practicum.users.repository.UserRepository;
 
 import java.time.LocalDateTime;

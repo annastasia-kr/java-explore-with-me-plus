@@ -4,13 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.events.enums.EventState;
+import ru.practicum.events.model.Event;
 import ru.practicum.requests.dto.ParticipationRequestDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.requests.mapper.ParticipationRequestMapper;
-import ru.practicum.ewm.model.*;
 import ru.practicum.events.repository.EventRepository;
+import ru.practicum.requests.model.ParticipationRequest;
 import ru.practicum.requests.respository.ParticipationRequestRepository;
+import ru.practicum.users.enums.RequestStatus;
+import ru.practicum.users.model.User;
 import ru.practicum.users.repository.UserRepository;
 import ru.practicum.requests.service.ParticipationRequestService;
 

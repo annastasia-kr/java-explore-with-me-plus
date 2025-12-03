@@ -1,4 +1,4 @@
-package java.ru.practicum.users.controller;
+package ru.practicum.users.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.ewm.EwmMainServiceApplication;
+import ru.practicum.MainServiceApplication;
 import ru.practicum.users.dto.NewUserRequest;
 import ru.practicum.users.dto.UserDto;
 import ru.practicum.exception.ConflictException;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminUserController.class)
-@ContextConfiguration(classes = {EwmMainServiceApplication.class})
+@ContextConfiguration(classes = {MainServiceApplication.class})
 class AdminUserControllerTest {
 
     @Autowired

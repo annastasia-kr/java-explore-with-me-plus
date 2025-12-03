@@ -1,11 +1,11 @@
 package ru.practicum.events.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.categories.model.Category;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.users.model.User;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SuppressWarnings("unused")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

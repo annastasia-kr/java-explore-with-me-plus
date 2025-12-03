@@ -1,5 +1,6 @@
 package ru.practicum.requests.controller;
 
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.requests.dto.ParticipationRequestDto;
 import ru.practicum.requests.service.ParticipationRequestService;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
@@ -17,7 +17,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @Slf4j
-@SuppressWarnings("unused")
 public class PrivateParticipationRequestController {
 
     private final ParticipationRequestService participationRequestService;

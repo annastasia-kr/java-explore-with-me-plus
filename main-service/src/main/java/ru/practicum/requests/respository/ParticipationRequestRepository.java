@@ -7,7 +7,7 @@ import ru.practicum.requests.model.ParticipationRequest;
 
 import java.util.List;
 import java.util.Optional;
-@SuppressWarnings("unused")
+
 public interface ParticipationRequestRepository extends JpaRepository<ParticipationRequest, Long> {
     List<ParticipationRequest> findAllByRequesterId(Long requesterId);
 
