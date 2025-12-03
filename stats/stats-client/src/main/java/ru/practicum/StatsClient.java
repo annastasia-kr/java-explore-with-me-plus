@@ -6,6 +6,6 @@ import java.util.List;
 public interface StatsClient {
     void saveHit(String app, String uri, String ip);
 
-    List<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique);
+    List<StatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique);
 
 }
