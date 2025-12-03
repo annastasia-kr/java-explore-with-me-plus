@@ -12,5 +12,3 @@ public class ErrorResponse {
         return error;
     }
 }
-
-

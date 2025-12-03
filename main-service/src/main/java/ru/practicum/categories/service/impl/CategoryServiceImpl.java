@@ -1,4 +1,4 @@
-package ru.practicum.categories.service;
+package ru.practicum.categories.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +12,7 @@ import ru.practicum.categories.dto.NewCategoryDto;
 import ru.practicum.categories.mapper.CategoryMapper;
 import ru.practicum.categories.model.Category;
 import ru.practicum.categories.repository.CategoryRepository;
+import ru.practicum.categories.service.CategoryService;
 import ru.practicum.events.repository.EventRepository;
 import ru.practicum.exception.DataConflictException;
 import ru.practicum.exception.NotFoundException;

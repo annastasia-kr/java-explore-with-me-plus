@@ -24,7 +24,7 @@ public class StatsClientImpl implements StatsClient {
 
     @Autowired
     public StatsClientImpl() {
-        this("http://localhost:9090");
+        this(System.getenv().getOrDefault("STATS_SERVER_URL", "http://localhost:9090"));
     }
 
     public StatsClientImpl(String baseUrl) {
@@ -82,7 +82,8 @@ public class StatsClientImpl implements StatsClient {
             List response = restClient.get()
                     .uri(url)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<List<StatsDto>>() {});
+                    .body(new ParameterizedTypeReference<List<StatsDto>>() {
+                    });
 
             return response;
         } catch (Exception e) {

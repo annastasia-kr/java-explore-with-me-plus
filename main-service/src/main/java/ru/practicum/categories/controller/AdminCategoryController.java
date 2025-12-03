@@ -10,7 +10,8 @@ import ru.practicum.categories.dto.CategoryDto;
 import ru.practicum.categories.dto.NewCategoryDto;
 import ru.practicum.categories.service.CategoryService;
 
-@RestController("/admin/categories")
+@RestController
+@RequestMapping("/admin/categories")
 @RequiredArgsConstructor
 @Validated
 public class AdminCategoryController {
@@ -31,7 +32,7 @@ public class AdminCategoryController {
     @PatchMapping("/{catId}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryDto updateById(@PathVariable @Positive Long catId,
-                                  @RequestBody @Valid NewCategoryDto o) {
+            @RequestBody @Valid NewCategoryDto o) {
         return service.updateById(catId, o);
     }
 }
