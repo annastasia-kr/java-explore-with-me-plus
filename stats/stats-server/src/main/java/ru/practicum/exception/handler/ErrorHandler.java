@@ -13,8 +13,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(final ValidationException e) {
-        ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-        return errorResponse;
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler

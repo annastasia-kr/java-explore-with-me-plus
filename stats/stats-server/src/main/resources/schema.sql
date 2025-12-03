@@ -8,6 +8,5 @@ CREATE TABLE IF NOT EXISTS hits (
     timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 
-CREATE INDEX idx_hit_timestamp ON hits(timestamp);
 CREATE INDEX idx_hit_uri ON hits(uri);
 CREATE INDEX idx_hit_ip ON hits(ip);
