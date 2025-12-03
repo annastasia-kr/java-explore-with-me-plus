@@ -5,4 +5,3 @@ public class DataConflictException extends RuntimeException {
         super(message);
     }
 }
-

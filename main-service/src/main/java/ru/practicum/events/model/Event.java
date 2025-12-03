@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.categories.model.Category;
-import ru.practicum.events.model.enumeration.StateEvent;
+import ru.practicum.events.enums.StateEvent;
 import ru.practicum.users.model.User;
 
 import java.time.LocalDateTime;

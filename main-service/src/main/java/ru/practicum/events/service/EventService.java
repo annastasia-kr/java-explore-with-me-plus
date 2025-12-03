@@ -2,7 +2,7 @@ package ru.practicum.events.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.events.dto.*;
-import ru.practicum.events.model.enumeration.Sort;
+import ru.practicum.events.enums.Sort;
 import ru.practicum.requests.dto.EventRequestStatusUpdateResult;
 import ru.practicum.requests.dto.EventRequestStatusUpdateDto;
 import ru.practicum.requests.dto.RequestDto;

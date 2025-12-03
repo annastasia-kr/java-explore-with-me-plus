@@ -11,7 +11,7 @@ import ru.practicum.events.dto.EventShortDto;
 import ru.practicum.events.dto.NewEventDto;
 import ru.practicum.events.model.Event;
 import ru.practicum.events.model.Location;
-import ru.practicum.events.model.enumeration.StateEvent;
+import ru.practicum.events.enums.StateEvent;
 import ru.practicum.users.mapper.UserMapper;
 import ru.practicum.users.model.User;
 

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Collection;
 
-import ru.practicum.events.model.enumeration.Sort;
+import ru.practicum.events.enums.Sort;
 import ru.practicum.events.service.EventService;
 
 @RestController
