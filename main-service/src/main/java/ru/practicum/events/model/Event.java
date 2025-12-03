@@ -1,17 +1,19 @@
 package ru.practicum.events.model;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.categories.model.Category;
-import ru.practicum.events.enums.StateEvent;
+import ru.practicum.events.model.enumeration.StateEvent;
 import ru.practicum.users.model.User;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "events")
 public class Event {
@@ -29,6 +31,9 @@ public class Event {
     private Category category;
 
     private String description;
+
+    @Transient
+    private Long confirmedRequests;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
@@ -55,4 +60,20 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     private StateEvent state;
+
+    @Transient
+    private Long views = 0L;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return Objects.equals(id, event.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

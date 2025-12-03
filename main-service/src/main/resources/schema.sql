@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS requests (
     created         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     event_id        BIGINT      NOT NULL,
     requester_id    BIGINT      NOT NULL,
-    status          VARCHAR(10) NOT NULL CHECK (status IN ('PENDING', 'REJECTED', 'CONFIRMED', 'CANCELED')),
+    status          VARCHAR(10) NOT NULL CHECK (status IN ('PENDING','REJECTED', 'CONFIRMED', 'CANCELED')),
     FOREIGN KEY (event_id)      REFERENCES events (id) ON DELETE CASCADE,
     FOREIGN KEY (requester_id)  REFERENCES users (id)  ON DELETE CASCADE
 );
@@ -52,9 +52,11 @@ CREATE TABLE IF NOT EXISTS compilations (
 );
 
 CREATE TABLE IF NOT EXISTS compilations_events (
-    compilation_id  BIGINT REFERENCES compilations(id),
-    event_id        BIGINT REFERENCES events(id),
-    PRIMARY KEY (compilation_id, event_id)
+    compilation_id   BIGINT NOT NULL,
+    event_id         BIGINT NOT NULL,
+    PRIMARY KEY (compilation_id, event_id),
+    FOREIGN KEY (compilation_id) REFERENCES compilations(id),
+    FOREIGN KEY (event_id)       REFERENCES events(id)
 );
 
 CREATE TABLE IF NOT EXISTS comments (
