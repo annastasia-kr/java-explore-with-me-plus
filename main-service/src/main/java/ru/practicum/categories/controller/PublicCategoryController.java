@@ -1,6 +1,5 @@
 package ru.practicum.categories.controller;
 
-
 import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,7 +10,8 @@ import ru.practicum.categories.service.CategoryService;
 
 import java.util.List;
 
-@RestController("/categories")
+@RestController
+@RequestMapping("/categories")
 @RequiredArgsConstructor
 @Validated
 public class PublicCategoryController {
@@ -21,7 +21,7 @@ public class PublicCategoryController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<CategoryDto> findAll(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                     @RequestParam(defaultValue = "10") @Positive Integer size) {
+            @RequestParam(defaultValue = "10") @Positive Integer size) {
         return service.findAll(from, size);
     }
 

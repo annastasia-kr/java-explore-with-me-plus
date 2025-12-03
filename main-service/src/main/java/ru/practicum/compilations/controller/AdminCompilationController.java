@@ -11,7 +11,8 @@ import ru.practicum.compilations.dto.NewCompilationDto;
 import ru.practicum.compilations.dto.UpdateCompilationRequest;
 import ru.practicum.compilations.service.CompilationService;
 
-@RestController("/admin/compilations")
+@RestController
+@RequestMapping("/admin/compilations")
 @RequiredArgsConstructor
 @Validated
 public class AdminCompilationController {
@@ -32,7 +33,7 @@ public class AdminCompilationController {
     @PatchMapping("/{compId}")
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto updateById(@RequestParam @Positive Long compId,
-                                     @RequestBody @Valid UpdateCompilationRequest o) {
+            @RequestBody @Valid UpdateCompilationRequest o) {
         return service.updateById(compId, o);
     }
 }

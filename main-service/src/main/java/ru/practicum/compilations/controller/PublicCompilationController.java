@@ -11,7 +11,8 @@ import ru.practicum.compilations.service.CompilationService;
 
 import java.util.List;
 
-@RestController("/compilations")
+@RestController
+@RequestMapping("/compilations")
 @RequiredArgsConstructor
 public class PublicCompilationController {
 
@@ -20,8 +21,8 @@ public class PublicCompilationController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<CompilationDto> findAll(@RequestParam(required = false) Boolean pinned,
-                                        @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                        @RequestParam(defaultValue = "10") @Positive Integer size) {
+            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+            @RequestParam(defaultValue = "10") @Positive Integer size) {
         return service.findAll(pinned, from, size);
     }
 
