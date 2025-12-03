@@ -35,10 +35,12 @@ public interface EventMapper {
     @Mapping(target = "requestModeration", expression = "java(newEventDto.getRequestModeration() == null ? true : newEventDto.getRequestModeration())")
     Event toEvent(NewEventDto newEventDto, Category category, User initiator, Location location);
 
-    @Mapping(source = "category", target = "category")
-    @Mapping(source = "initiator", target = "initiator")
-    @Mapping(source = "location", target = "location")
-    EventDto toEventDto(Event event);
+    @Mapping(source = "event.category", target = "category")
+    @Mapping(source = "event.initiator", target = "initiator")
+    @Mapping(source = "event.location", target = "location")
+    @Mapping(source = "confirmedRequests", target = "confirmedRequests")
+    @Mapping(source = "views", target = "views")
+    EventDto toEventDto(Event event, Long confirmedRequests, Long views);
 
     @Mapping(source = "category", target = "category")
     @Mapping(source = "confirmedRequests", target = "confirmedRequests")

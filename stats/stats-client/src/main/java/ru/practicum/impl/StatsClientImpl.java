@@ -2,11 +2,13 @@ package ru.practicum.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.StatsClient;
+import ru.practicum.StatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,7 +24,7 @@ public class StatsClientImpl implements StatsClient {
 
     @Autowired
     public StatsClientImpl() {
-        this("${stats-server.url}");
+        this("http://localhost:9090");
     }
 
     public StatsClientImpl(String baseUrl) {
@@ -61,7 +63,7 @@ public class StatsClientImpl implements StatsClient {
     }
 
     @Override
-    public List<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+    public List<StatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         try {
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl + "/stats")
                     .queryParam("start", start.format(FORMATTER))
@@ -77,12 +79,12 @@ public class StatsClientImpl implements StatsClient {
 
             String url = uriBuilder.build().toUriString();
 
-            Object[] response = restClient.get()
+            List response = restClient.get()
                     .uri(url)
                     .retrieve()
-                    .body(Object[].class);
+                    .body(new ParameterizedTypeReference<List<StatsDto>>() {});
 
-            return response != null ? Arrays.asList(response) : Collections.emptyList();
+            return response;
         } catch (Exception e) {
             log.error("Error getting stats: {}", e.getMessage());
             return Collections.emptyList();

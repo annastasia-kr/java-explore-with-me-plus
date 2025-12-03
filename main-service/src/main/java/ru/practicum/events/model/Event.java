@@ -14,7 +14,6 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "events")
 public class Event {
@@ -33,6 +32,7 @@ public class Event {
 
     private String description;
 
+    @Transient
     private Long confirmedRequests;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -61,7 +61,8 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private StateEvent state;
 
-    private Long views;
+    @Transient
+    private Long views = 0L;
 
     @Override
     public boolean equals(Object o) {

@@ -2,6 +2,7 @@ package ru.practicum.impl;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
+import ru.practicum.StatsDto;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ class StatsClientIntegrationTest {
     void getStats_WithInvalidServer_ShouldReturnEmptyList() {
         StatsClientImpl client = new StatsClientImpl("http://invalid-server:9999");
 
-        List<Object> result = client.getStats(
+        List<StatsDto> result = client.getStats(
                 LocalDateTime.now().minusDays(1),
                 LocalDateTime.now(),
                 List.of("/events/1", "/events/2"),
@@ -51,7 +52,7 @@ class StatsClientIntegrationTest {
     void getStats_WithNullUrisAndUnique_ShouldReturnEmptyList() {
         StatsClientImpl client = new StatsClientImpl("http://invalid-server:9999");
 
-        List<Object> result = client.getStats(
+        List<StatsDto> result = client.getStats(
                 LocalDateTime.now().minusDays(1),
                 LocalDateTime.now(),
                 null,

@@ -1,6 +1,7 @@
 package ru.practicum.impl;
 
 import org.junit.jupiter.api.Test;
+import ru.practicum.StatsDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,7 +32,7 @@ class StatsClientImplTest {
     void getStats_WithInvalidServer_ShouldReturnEmptyList() {
         StatsClientImpl client = new StatsClientImpl("http://invalid-server:9999");
 
-        List<Object> result = client.getStats(
+        List<StatsDto> result = client.getStats(
                 LocalDateTime.now().minusDays(1),
                 LocalDateTime.now(),
                 List.of("/test"),

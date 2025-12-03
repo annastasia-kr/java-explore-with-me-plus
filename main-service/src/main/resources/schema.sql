@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS events (
     title               VARCHAR(128) NOT NULL,
     category_id         BIGINT,
     description         TEXT,
-    confirmed_requests  BIGINT,
     created_on          TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     event_date          TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     initiator_id        BIGINT NOT NULL,
@@ -31,7 +30,6 @@ CREATE TABLE IF NOT EXISTS events (
     request_moderation  BOOLEAN,
     location_id         BIGINT,
     state               VARCHAR(10) NOT NULL,
-    views               BIGINT,
     FOREIGN KEY (category_id)  REFERENCES categories(id),
     FOREIGN KEY (initiator_id) REFERENCES users(id),
     FOREIGN KEY (location_id)  REFERENCES locations(id)
