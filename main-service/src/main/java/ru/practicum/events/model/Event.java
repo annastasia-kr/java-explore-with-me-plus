@@ -1,69 +1,79 @@
 package ru.practicum.events.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.categories.model.Category;
-import ru.practicum.events.enums.EventState;
+import ru.practicum.events.enums.StateEvent;
 import ru.practicum.users.model.User;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-@Entity
-@Table(name = "events")
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "events")
 public class Event {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false, length = 120)
-    private String title;
-
-    @Column(name = "annotation", nullable = false, length = 2000)
     private String annotation;
 
-    @Column(name = "description", length = 7000)
-    private String description;
+    private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(name = "event_date", nullable = false)
+    private String description;
+
+    @Transient
+    private Long confirmedRequests;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdOn;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "initiator_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "initiator_id")
     private User initiator;
 
-    @Column(name = "paid", nullable = false)
     private Boolean paid;
 
-    @Column(name = "participant_limit", nullable = false)
-    private Integer participantLimit;
+    private Long participantLimit;
 
-    @Column(name = "request_moderation", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime publishedOn;
+
     private Boolean requestModeration;
 
-    @Column(name = "state", nullable = false)
+    @OneToOne
+    @JoinColumn(name = "location_id")
+    private Location location;
+
     @Enumerated(EnumType.STRING)
-    private EventState state;
+    private StateEvent state;
 
-    @Column(name = "created_date", nullable = false)
-    private LocalDateTime createdDate;
+    @Transient
+    private Long views = 0L;
 
-    @Column(name = "published_date")
-    private LocalDateTime publishedDate;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return Objects.equals(id, event.id);
+    }
 
-    @PrePersist
-    protected void onCreate() {
-        createdDate = LocalDateTime.now();
-        state = EventState.PENDING;
-        if (participantLimit == null) participantLimit = 0;
-        if (requestModeration == null) requestModeration = true;
-        if (paid == null) paid = false;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.events.enums.EventState;
+import ru.practicum.events.enums.StateEvent;
 import ru.practicum.events.model.Event;
 import ru.practicum.requests.dto.ParticipationRequestDto;
 import ru.practicum.exception.ConflictException;
@@ -66,12 +66,11 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 });
 
         // Создаем запрос и сразу устанавливаем дату создания
-        ParticipationRequest request = ParticipationRequest.builder()
-                .event(event)
-                .requester(user)
-                .status(RequestStatus.PENDING)
-                .createdDate(LocalDateTime.now()) // Устанавливаем дату здесь
-                .build();
+        ParticipationRequest request = new ParticipationRequest();
+        request.setEvent(event);
+        request.setRequester(user);
+        request.setStatus(RequestStatus.PENDING);
+        request.setCreatedDate(LocalDateTime.now());
 
         // Проверяем условия для авто-подтверждения
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
@@ -113,7 +112,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         }
 
         // Проверяем, что событие опубликовано
-        if (!event.getState().equals(EventState.PUBLISHED)) {
+        if (!event.getState().equals(StateEvent.PUBLISHED)) {
             throw new ConflictException("Нельзя участвовать в неопубликованном событии");
         }
 

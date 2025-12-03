@@ -9,9 +9,9 @@ import ru.practicum.users.model.User;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "participation_requests")
-@Data
-@Builder
+@Table(name = "requests")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ParticipationRequest {
@@ -32,6 +32,6 @@ public class ParticipationRequest {
     @Enumerated(EnumType.STRING)
     private RequestStatus status; // Используется здесь
 
-    @Column(name = "created_date", nullable = false)
+    @Column(name = "created", nullable = false)
     private LocalDateTime createdDate;
 }

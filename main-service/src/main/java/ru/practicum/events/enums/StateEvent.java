@@ -1,6 +1,6 @@
 package ru.practicum.events.enums;
 @SuppressWarnings("unused")
-public enum EventState {
+public enum StateEvent {
     PENDING,
     PUBLISHED,
     CANCELED

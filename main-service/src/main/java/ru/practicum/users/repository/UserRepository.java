@@ -12,8 +12,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE " +
-            "(:ids IS NULL OR u.id IN :ids)")
+    @Query("SELECT u FROM User u WHERE u.id IN :ids")
     List<User> findAllByIds(@Param("ids") List<Long> ids, Pageable pageable);
 
     boolean existsByEmail(String email);

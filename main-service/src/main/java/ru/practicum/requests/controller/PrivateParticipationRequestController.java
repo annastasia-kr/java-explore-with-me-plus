@@ -1,10 +1,9 @@
 package ru.practicum.requests.controller;
 
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.requests.dto.ParticipationRequestDto;
@@ -22,27 +21,27 @@ public class PrivateParticipationRequestController {
     private final ParticipationRequestService participationRequestService;
 
     @GetMapping
-    public ResponseEntity<List<ParticipationRequestDto>> getUserRequests(@PathVariable Long userId) {
+    @ResponseStatus(HttpStatus.OK)
+    public List<ParticipationRequestDto> getUserRequests(@PathVariable @Positive Long userId) {
         log.info("GET /users/{}/requests - получение запросов пользователя", userId);
-        List<ParticipationRequestDto> requests = participationRequestService.getUserRequests(userId);
-        return ResponseEntity.ok(requests);
+        return participationRequestService.getUserRequests(userId);
     }
 
     @PostMapping
-    public ResponseEntity<ParticipationRequestDto> createParticipationRequest(
-            @PathVariable Long userId,
-            @RequestParam @Positive Long eventId) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ParticipationRequestDto createParticipationRequest(
+            @PathVariable @Positive Long userId,
+            @RequestParam @NotNull @Positive Long eventId) {
         log.info("POST /users/{}/requests - создание запроса на участие в событии {}", userId, eventId);
-        ParticipationRequestDto requestDto = participationRequestService.createParticipationRequest(userId, eventId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(requestDto);
+        return participationRequestService.createParticipationRequest(userId, eventId);
     }
 
     @PatchMapping("/{requestId}/cancel")
-    public ResponseEntity<ParticipationRequestDto> cancelRequest(
-            @PathVariable Long userId,
-            @PathVariable Long requestId) {
+    @ResponseStatus(HttpStatus.OK)
+    public ParticipationRequestDto cancelRequest(
+            @PathVariable @Positive Long userId,
+            @PathVariable @Positive Long requestId) {
         log.info("PATCH /users/{}/requests/{}/cancel - отмена запроса", userId, requestId);
-        ParticipationRequestDto requestDto = participationRequestService.cancelRequest(userId, requestId);
-        return ResponseEntity.ok(requestDto);
+        return participationRequestService.cancelRequest(userId, requestId);
     }
 }

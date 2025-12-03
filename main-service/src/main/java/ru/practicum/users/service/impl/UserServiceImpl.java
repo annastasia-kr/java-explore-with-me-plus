@@ -46,17 +46,18 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
         log.info("Получение списка пользователей: ids={}, from={}, size={}", ids, from, size);
-
         Pageable pageable = PageRequest.of(from / size, size);
-        List<User> users;
+        return userRepository.findAllByIds(ids, pageable).stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
-        if (ids != null && !ids.isEmpty()) {
-            users = userRepository.findAllByIds(ids, pageable);
-        } else {
-            users = userRepository.findAll(pageable).getContent();
-        }
-
-        return users.stream()
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDto> getUsers(Integer from, Integer size) {
+        log.info("Получение списка пользователей: ids=null, from={}, size={}", from, size);
+        Pageable pageable = PageRequest.of(from / size, size);
+        return userRepository.findAll(pageable).getContent().stream()
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }

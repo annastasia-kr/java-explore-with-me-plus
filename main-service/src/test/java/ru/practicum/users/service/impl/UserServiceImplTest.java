@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.users.dto.NewUserRequest;
 import ru.practicum.users.dto.UserDto;
@@ -42,24 +41,21 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        user = User.builder()
-                .id(1L)
-                .name("John Doe")
-                .email("john.doe@example.com")
-                .createdDate(LocalDateTime.now())
-                .build();
+        user = new User();
+        user.setId(1L);
+        user.setName("John Doe");
+        user.setEmail("john.doe@example.com");
+        user.setCreatedDate(LocalDateTime.now());
 
-        userDto = UserDto.builder()
-                .id(1L)
-                .name("John Doe")
-                .email("john.doe@example.com")
-                .createdDate(LocalDateTime.now())
-                .build();
+        userDto = new UserDto();
+        userDto.setId(1L);
+        userDto.setName("John Doe");
+        userDto.setEmail("john.doe@example.com");
+        userDto.setCreatedDate(LocalDateTime.now());
 
-        newUserRequest = NewUserRequest.builder()
-                .name("John Doe")
-                .email("john.doe@example.com")
-                .build();
+        newUserRequest = new NewUserRequest();
+        newUserRequest.setName("John Doe");
+        newUserRequest.setEmail("john.doe@example.com");
     }
 
     @Test
@@ -88,21 +84,6 @@ class UserServiceImplTest {
 
         assertEquals("Пользователь с email=john.doe@example.com уже существует", exception.getMessage());
         verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    void getUsers_WithoutIds_ShouldReturnAllUsers() {
-        PageRequest pageRequest = PageRequest.of(0, 10);
-        when(userRepository.findAll(pageRequest)).thenReturn(new PageImpl<>(List.of(user)));
-        when(userMapper.toDto(any(User.class))).thenReturn(userDto);
-
-        List<UserDto> result = adminUserService.getUsers(null, 0, 10);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(userDto.getId(), result.get(0).getId());
-
-        verify(userRepository, times(1)).findAll(pageRequest);
     }
 
     @Test
