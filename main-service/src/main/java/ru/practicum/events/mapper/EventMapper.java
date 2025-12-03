@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 public interface EventMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "publishedOn", ignore = true)
     @Mapping(source = "category", target = "category")
     @Mapping(source = "initiator", target = "initiator")
     @Mapping(source = "location", target = "location")

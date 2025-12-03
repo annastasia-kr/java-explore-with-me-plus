@@ -180,8 +180,7 @@ public class EventServiceImpl implements EventService {
         List<Request> rejectedRequests = new ArrayList<>();
         RequestStatus updateStatus = eventRequestStatusUpdateDto.getStatus();
         if (updateStatus == RequestStatus.REJECTED || updateStatus == RequestStatus.CONFIRMED) {
-            for (Request request : requestsToStatusUpdate)
-            {
+            for (Request request : requestsToStatusUpdate) {
                 if (updateStatus == RequestStatus.REJECTED) {
                     request.setStatus(RequestStatus.REJECTED.name());
                     rejectedRequests.add(request);
@@ -432,7 +431,7 @@ public class EventServiceImpl implements EventService {
 
     private void applyTextFilter(List<Predicate> predicates, CriteriaBuilder cb, Root<Event> root, String text) {
         if (text != null && !text.isBlank()) {
-            String searchText = "%"  + text.toLowerCase() + "%" ;
+            String searchText = "%" + text.toLowerCase() + "%";
             predicates.add(cb.or(cb.like(cb.lower(root.get("annotation")), searchText),
                     cb.like(cb.lower(root.get("description")), searchText)));
         }
@@ -452,7 +451,7 @@ public class EventServiceImpl implements EventService {
 
     private Long getEventsViews(LocalDateTime createdOn, Long eventId) {
         List<StatsDto> stat = statsClient.getStats(createdOn, LocalDateTime.now(),
-                List.of(URI+eventId), true);
+                List.of(URI + eventId), true);
         if (stat.isEmpty()) {
             return 0L;
         }
