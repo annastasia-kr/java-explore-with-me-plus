@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.events.model.enumeration.StateActionAdmin;
+import ru.practicum.events.enums.StateActionAdmin;
 
 import java.time.LocalDateTime;
 

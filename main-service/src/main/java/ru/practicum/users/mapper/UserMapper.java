@@ -15,9 +15,10 @@ public interface UserMapper {
     User toEntity(NewUserRequest newUserRequest);
 
     UserDto toDto(User user);
-  
+
     UserShortDto toUserShortDto(User user);
 
     @Mapping(target = "email", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
     User toUser(UserShortDto dto);
 }
