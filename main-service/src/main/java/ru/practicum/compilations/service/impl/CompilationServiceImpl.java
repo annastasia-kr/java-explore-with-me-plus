@@ -118,6 +118,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public CompilationDto updateById(Long compId, UpdateCompilationRequest o) {
         Compilation existedCompilation = repository.findById(compId)
                 .orElseThrow(() -> {
@@ -134,9 +135,10 @@ public class CompilationServiceImpl implements CompilationService {
             List<Event> events = eventRepository.findAllById(o.getEvents());
             existedCompilation.setEvents(events);
         }
-        CompilationDto dto = mapper.toCompilationDto(existedCompilation);
-        if (existedCompilation.getEvents() != null) {
-            dto.setEvents(mapper.toEventShortDtoCollection(existedCompilation.getEvents()));
+        Compilation savedCompilation = repository.save(existedCompilation);
+        CompilationDto dto = mapper.toCompilationDto(savedCompilation);
+        if (savedCompilation.getEvents() != null) {
+            dto.setEvents(mapper.toEventShortDtoCollection(savedCompilation.getEvents()));
         }
         return dto;
     }
