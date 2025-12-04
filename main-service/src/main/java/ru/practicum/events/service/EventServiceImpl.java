@@ -110,6 +110,14 @@ public class EventServiceImpl implements EventService {
             throw new DataConflictException("Operation is not permitted for a published event");
         }
 
+        // Проверка на отмену события
+        if ("CANCEL_REVIEW".equals(updateEventDtoUserRequest.getStateAction())) {
+            if (event.getState() != StateEvent.PENDING) {
+                throw new DataConflictException("Only pending events can be canceled");
+            }
+            event.setState(StateEvent.CANCELED);
+        }
+
         if (updateEventDtoUserRequest.getAnnotation() != null && !updateEventDtoUserRequest.getAnnotation().isBlank()) {
             event.setAnnotation(updateEventDtoUserRequest.getAnnotation());
         }
@@ -121,7 +129,7 @@ public class EventServiceImpl implements EventService {
             event.setCategory(categoryRepository.findById(updateEventDtoUserRequest.getCategory()).orElseThrow(
                     () -> new NotFoundException("Category not found")));
         }
-        if (updateEventDtoUserRequest.getCategory() != null) {
+        if (updateEventDtoUserRequest.getEventDate() != null) {
             if (!updateEventDtoUserRequest.getEventDate().isAfter(LocalDateTime.now().plusHours(2))) {
                 throw new DataConflictException("The event date must exceed the current timestamp + 2H");
             }
