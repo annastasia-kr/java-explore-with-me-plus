@@ -17,6 +17,7 @@ import ru.practicum.events.model.Event;
 import ru.practicum.events.repository.EventRepository;
 import ru.practicum.exception.NotFoundException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public List<CompilationDto> findAll(Boolean pinned, Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size);
-        return repository.findByPinned(pinned, page).stream()
+        return repository.findByPinned(pinned, page).getContent().stream()
                 .map(compilation -> {
                     CompilationDto dto = mapper.toCompilationDto(compilation);
                     if (compilation.getEvents() != null) {
@@ -47,7 +48,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public List<CompilationDto> findAll(Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size);
-        return repository.findAll(page).stream()
+        return repository.findAll(page).getContent().stream()
                 .map(compilation -> {
                     CompilationDto dto = mapper.toCompilationDto(compilation);
                     if (compilation.getEvents() != null) {
@@ -100,6 +101,8 @@ public class CompilationServiceImpl implements CompilationService {
         CompilationDto dto = mapper.toCompilationDto(repository.save(newCompilation));
         if (newCompilation.getEvents() != null) {
             dto.setEvents(mapper.toEventShortDtoCollection(newCompilation.getEvents()));
+        } else {
+            dto.setEvents(Collections.emptyList());
         }
         return dto;
     }
