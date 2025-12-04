@@ -35,11 +35,11 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("Пользователь с email=" + newUserRequest.getEmail() + " уже существует");
         }
 
-        User user = userMapper.toEntity(newUserRequest);
+        User user = userMapper.toUser(newUserRequest);
         User savedUser = userRepository.save(user);
         log.info("Пользователь создан с ID: {}", savedUser.getId());
 
-        return userMapper.toDto(savedUser);
+        return userMapper.toUserDto(savedUser);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
         log.info("Получение списка пользователей: ids={}, from={}, size={}", ids, from, size);
         Pageable pageable = PageRequest.of(from / size, size);
         return userRepository.findAllByIds(ids, pageable).stream()
-                .map(userMapper::toDto)
+                .map(userMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
         log.info("Получение списка пользователей: ids=null, from={}, size={}", from, size);
         Pageable pageable = PageRequest.of(from / size, size);
         return userRepository.findAll(pageable).getContent().stream()
-                .map(userMapper::toDto)
+                .map(userMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 

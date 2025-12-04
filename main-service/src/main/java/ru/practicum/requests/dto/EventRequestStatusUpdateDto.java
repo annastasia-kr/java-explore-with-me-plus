@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.requests.model.enumeration.RequestStatus;
+import ru.practicum.requests.enums.RequestStatus;
 
 import java.util.List;
 

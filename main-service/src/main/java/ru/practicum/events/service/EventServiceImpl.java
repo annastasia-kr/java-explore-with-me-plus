@@ -30,7 +30,7 @@ import ru.practicum.requests.dto.EventRequestStatusUpdateDto;
 import ru.practicum.requests.dto.RequestDto;
 import ru.practicum.requests.mapper.RequestMapper;
 import ru.practicum.requests.model.Request;
-import ru.practicum.requests.model.enumeration.RequestStatus;
+import ru.practicum.requests.enums.RequestStatus;
 import ru.practicum.requests.repository.RequestRepository;
 import ru.practicum.users.model.User;
 import ru.practicum.users.repository.UserRepository;
@@ -172,7 +172,7 @@ public class EventServiceImpl implements EventService {
         }
         List<Request> requestsToStatusUpdate = requestRepository.findAllByIdIn(eventRequestStatusUpdateDto.getRequestIds());
         if (requestsToStatusUpdate.stream()
-                .anyMatch(request -> !request.getStatus().equals(RequestStatus.PENDING.name()))) {
+                .anyMatch(request -> !request.getStatus().equals(RequestStatus.PENDING))) {
             throw new DataConflictException("Applications must be in status \"PENDING\"");
         }
 
@@ -182,10 +182,10 @@ public class EventServiceImpl implements EventService {
         if (updateStatus == RequestStatus.REJECTED || updateStatus == RequestStatus.CONFIRMED) {
             for (Request request : requestsToStatusUpdate) {
                 if (updateStatus == RequestStatus.REJECTED) {
-                    request.setStatus(RequestStatus.REJECTED.name());
+                    request.setStatus(RequestStatus.REJECTED);
                     rejectedRequests.add(request);
                 } else if (updateStatus.equals(RequestStatus.CONFIRMED)) {
-                    request.setStatus(RequestStatus.CONFIRMED.name());
+                    request.setStatus(RequestStatus.CONFIRMED);
                     confirmedRequests.add(request);
                     event.setConfirmedRequests(event.getConfirmedRequests() + 1);
                 }
@@ -194,7 +194,7 @@ public class EventServiceImpl implements EventService {
             if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
                 List<Request> pendingRequests = requestRepository.findAllByEventIdAndStatus(eventId, RequestStatus.PENDING.name());
                 for (Request pendingRequest : pendingRequests) {
-                    pendingRequest.setStatus(RequestStatus.REJECTED.name());
+                    pendingRequest.setStatus(RequestStatus.REJECTED);
                     rejectedRequests.add(pendingRequest);
                 }
                 throw new DataConflictException("Application limit exceeded - confirmation not allowed");
@@ -279,7 +279,7 @@ public class EventServiceImpl implements EventService {
 
         if (updateEventDtoAdminRequest.getEventDate() != null) {
             if (updateEventDtoAdminRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
-                throw new DataConflictException("The event date must exceed the current timestamp + 1H");
+                throw new ValidationException("The event date must exceed the current timestamp + 1H");
             } else {
                 event.setEventDate(updateEventDtoAdminRequest.getEventDate());
             }
@@ -376,7 +376,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException("Event not found"));
         if (!event.getState().equals(StateEvent.PUBLISHED)) {
-            throw new DataConflictException("Event must be published");
+            throw new NotFoundException("Event must be published");
         }
         statsClient.saveHit("main-service", httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr());
 

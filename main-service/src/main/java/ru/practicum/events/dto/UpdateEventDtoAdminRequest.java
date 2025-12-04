@@ -1,10 +1,8 @@
 package ru.practicum.events.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.*;
+import lombok.*;
 import ru.practicum.events.enums.StateActionAdmin;
 
 import java.time.LocalDateTime;
@@ -30,6 +28,7 @@ public class UpdateEventDtoAdminRequest {
 
     private Boolean paid;
 
+    @PositiveOrZero
     private Long participantLimit;
 
     private Boolean requestModeration;

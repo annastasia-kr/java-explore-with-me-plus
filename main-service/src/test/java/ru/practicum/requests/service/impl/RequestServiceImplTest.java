@@ -9,13 +9,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.categories.model.Category;
 import ru.practicum.events.enums.StateEvent;
 import ru.practicum.events.model.Event;
-import ru.practicum.requests.dto.ParticipationRequestDto;
+import ru.practicum.requests.dto.RequestDto;
 import ru.practicum.exception.ConflictException;
-import ru.practicum.requests.mapper.ParticipationRequestMapper;
+import ru.practicum.requests.mapper.RequestMapper;
 import ru.practicum.events.repository.EventRepository;
-import ru.practicum.requests.model.ParticipationRequest;
-import ru.practicum.requests.respository.ParticipationRequestRepository;
-import ru.practicum.users.enums.RequestStatus;
+import ru.practicum.requests.model.Request;
+import ru.practicum.requests.repository.RequestRepository;
+import ru.practicum.requests.enums.RequestStatus;
 import ru.practicum.users.model.User;
 import ru.practicum.users.repository.UserRepository;
 
@@ -27,10 +27,10 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ParticipationRequestServiceImplTest {
+class RequestServiceImplTest {
 
         @Mock
-        private ParticipationRequestRepository requestRepository;
+        private RequestRepository requestRepository;
 
         @Mock
         private UserRepository userRepository;
@@ -39,15 +39,15 @@ class ParticipationRequestServiceImplTest {
         private EventRepository eventRepository;
 
         @Mock
-        private ParticipationRequestMapper requestMapper;
+        private RequestMapper requestMapper;
 
         @InjectMocks
-        private ParticipationRequestServiceImpl participationRequestService;
+        private RequestServiceImpl requestService;
 
         private User user;
         private Event event;
-        private ParticipationRequest participationRequest;
-        private ParticipationRequestDto requestDto;
+        private Request request;
+        private RequestDto requestDto;
 
         @BeforeEach
         void setUp() {
@@ -78,14 +78,14 @@ class ParticipationRequestServiceImplTest {
                 event.setState(StateEvent.PUBLISHED);
                 event.setCreatedOn(LocalDateTime.now());
 
-                participationRequest = new ParticipationRequest();
-                participationRequest.setId(1L);
-                participationRequest.setEvent(event);
-                participationRequest.setRequester(user);
-                participationRequest.setStatus(RequestStatus.PENDING);
-                participationRequest.setCreatedDate(LocalDateTime.now());
+                request = new Request();
+                request.setId(1L);
+                request.setEvent(event);
+                request.setRequester(user);
+                request.setStatus(RequestStatus.PENDING);
+                request.setCreatedDate(LocalDateTime.now());
 
-                requestDto = new ParticipationRequestDto();
+                requestDto = new RequestDto();
                 requestDto.setId(1L);
                 requestDto.setEvent(10L);
                 requestDto.setRequester(1L);
@@ -94,110 +94,110 @@ class ParticipationRequestServiceImplTest {
         }
 
         @Test
-        void createParticipationRequest_ShouldCreateRequestSuccessfully() {
+        void createRequest_ShouldCreateRequestSuccessfully() {
                 when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
                 when(eventRepository.findById(anyLong())).thenReturn(Optional.of(event));
-                when(requestRepository.findByEventIdAndRequesterId(anyLong(), anyLong())).thenReturn(Optional.empty());
+                when(requestRepository.existsByEventIdAndRequesterId(anyLong(), anyLong())).thenReturn(false);
 
                 // Мок для сохранения - должен вернуть request с PENDING статусом
-                ParticipationRequest pendingRequest = new ParticipationRequest();
+                Request pendingRequest = new Request();
                 pendingRequest.setId(1L);
                 pendingRequest.setEvent(event);
                 pendingRequest.setRequester(user);
                 pendingRequest.setStatus(RequestStatus.PENDING); // PENDING, т.к. requestModeration = true
                 pendingRequest.setCreatedDate(LocalDateTime.now());
 
-                when(requestRepository.save(any(ParticipationRequest.class))).thenReturn(pendingRequest);
-                when(requestMapper.toDto(any(ParticipationRequest.class))).thenReturn(requestDto);
+                when(requestRepository.save(any(Request.class))).thenReturn(pendingRequest);
+                when(requestMapper.toRequestDto(any(Request.class))).thenReturn(requestDto);
 
-                ParticipationRequestDto result = participationRequestService.createParticipationRequest(1L, 10L);
+                RequestDto result = requestService.create(1L, 10L);
 
                 assertNotNull(result);
                 assertEquals("PENDING", result.getStatus());
 
-                verify(requestRepository, times(1)).save(any(ParticipationRequest.class));
-                verify(requestMapper, times(1)).toDto(any(ParticipationRequest.class));
+                verify(requestRepository, times(1)).save(any(Request.class));
+                verify(requestMapper, times(1)).toRequestDto(any(Request.class));
                 verify(requestRepository, times(1)).countConfirmedRequests(anyLong());
         }
 
         @Test
-        void createParticipationRequest_WhenNoModerationRequired_ShouldAutoConfirm() {
+        void createRequest_WhenNoModerationRequired_ShouldAutoConfirm() {
                 // Arrange
                 event.setRequestModeration(false); // Модерация не требуется
 
                 when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
                 when(eventRepository.findById(anyLong())).thenReturn(Optional.of(event));
-                when(requestRepository.findByEventIdAndRequesterId(anyLong(), anyLong())).thenReturn(Optional.empty());
+                when(requestRepository.existsByEventIdAndRequesterId(anyLong(), anyLong())).thenReturn(false);
 
                 // Создаем CONFIRMED запрос для мока
-                ParticipationRequest confirmedRequest = new ParticipationRequest();
+                Request confirmedRequest = new Request();
                 confirmedRequest.setId(1L);
                 confirmedRequest.setEvent(event);
                 confirmedRequest.setRequester(user);
                 confirmedRequest.setStatus(RequestStatus.CONFIRMED); // Должен быть CONFIRMED
                 confirmedRequest.setCreatedDate(LocalDateTime.now());
 
-                when(requestRepository.save(any(ParticipationRequest.class))).thenReturn(confirmedRequest);
+                when(requestRepository.save(any(Request.class))).thenReturn(confirmedRequest);
 
-                ParticipationRequestDto confirmedDto = new ParticipationRequestDto();
+                RequestDto confirmedDto = new RequestDto();
                 confirmedDto.setId(1L);
                 confirmedDto.setEvent(10L);
                 confirmedDto.setRequester(1L);
                 confirmedDto.setStatus("CONFIRMED"); // Должен быть CONFIRMED
                 confirmedDto.setCreated(LocalDateTime.now());
 
-                when(requestMapper.toDto(any(ParticipationRequest.class))).thenReturn(confirmedDto);
+                when(requestMapper.toRequestDto(any(Request.class))).thenReturn(confirmedDto);
 
                 // Act
-                ParticipationRequestDto result = participationRequestService.createParticipationRequest(1L, 10L);
+                RequestDto result = requestService.create(1L, 10L);
 
                 // Assert
                 assertNotNull(result);
                 assertEquals("CONFIRMED", result.getStatus()); // Проверяем CONFIRMED статус
-                verify(requestRepository, times(1)).save(any(ParticipationRequest.class));
+                verify(requestRepository, times(1)).save(any(Request.class));
                 verify(requestRepository, times(1)).countConfirmedRequests(anyLong());
         }
 
         @Test
-        void createParticipationRequest_WhenNoParticipantLimit_ShouldAutoConfirm() {
+        void createRequest_WhenNoParticipantLimit_ShouldAutoConfirm() {
                 // Arrange
                 event.setParticipantLimit(0L); // Без лимита участников
 
                 when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
                 when(eventRepository.findById(anyLong())).thenReturn(Optional.of(event));
-                when(requestRepository.findByEventIdAndRequesterId(anyLong(), anyLong())).thenReturn(Optional.empty());
+                when(requestRepository.existsByEventIdAndRequesterId(anyLong(), anyLong())).thenReturn(false);
 
                 // Создаем CONFIRMED запрос для мока
-                ParticipationRequest confirmedRequest = new ParticipationRequest();
+                Request confirmedRequest = new Request();
                 confirmedRequest.setId(1L);
                 confirmedRequest.setEvent(event);
                 confirmedRequest.setRequester(user);
                 confirmedRequest.setStatus(RequestStatus.CONFIRMED); // Должен быть CONFIRMED
                 confirmedRequest.setCreatedDate(LocalDateTime.now());
 
-                when(requestRepository.save(any(ParticipationRequest.class))).thenReturn(confirmedRequest);
+                when(requestRepository.save(any(Request.class))).thenReturn(confirmedRequest);
 
-                ParticipationRequestDto confirmedDto = new ParticipationRequestDto();
+                RequestDto confirmedDto = new RequestDto();
                 confirmedDto.setId(1L);
                 confirmedDto.setEvent(10L);
                 confirmedDto.setRequester(1L);
                 confirmedDto.setStatus("CONFIRMED"); // Должен быть CONFIRMED
                 confirmedDto.setCreated(LocalDateTime.now());
 
-                when(requestMapper.toDto(any(ParticipationRequest.class))).thenReturn(confirmedDto);
+                when(requestMapper.toRequestDto(any(Request.class))).thenReturn(confirmedDto);
 
                 // Act
-                ParticipationRequestDto result = participationRequestService.createParticipationRequest(1L, 10L);
+                RequestDto result = requestService.create(1L, 10L);
 
                 // Assert
                 assertNotNull(result);
                 assertEquals("CONFIRMED", result.getStatus()); // Проверяем CONFIRMED статус
-                verify(requestRepository, times(1)).save(any(ParticipationRequest.class));
+                verify(requestRepository, times(1)).save(any(Request.class));
                 verify(requestRepository, never()).countConfirmedRequests(anyLong());
         }
 
         @Test
-        void createParticipationRequest_WhenParticipantLimitReached_ShouldThrowConflictException() {
+        void createRequest_WhenParticipantLimitReached_ShouldThrowConflictException() {
                 // Arrange
                 event.setParticipantLimit(1L); // Лимит 1 участник
 
@@ -207,15 +207,15 @@ class ParticipationRequestServiceImplTest {
 
                 // Act & Assert
                 ConflictException exception = assertThrows(ConflictException.class,
-                                () -> participationRequestService.createParticipationRequest(1L, 10L));
+                                () -> requestService.create(1L, 10L));
 
                 assertEquals("Достигнут лимит участников события", exception.getMessage());
-                verify(requestRepository, never()).save(any(ParticipationRequest.class));
+                verify(requestRepository, never()).save(any(Request.class));
                 verify(requestRepository, times(1)).countConfirmedRequests(anyLong());
         }
 
         @Test
-        void createParticipationRequest_ByInitiator_ShouldThrowConflictException() {
+        void createRequest_ByInitiator_ShouldThrowConflictException() {
                 // Arrange: делаем так, чтобы user был инициатором события
                 event.setInitiator(user);
 
@@ -224,48 +224,48 @@ class ParticipationRequestServiceImplTest {
 
                 // Act & Assert
                 ConflictException exception = assertThrows(ConflictException.class,
-                                () -> participationRequestService.createParticipationRequest(1L, 10L));
+                                () -> requestService.create(1L, 10L));
 
                 assertEquals("Инициатор события не может подать заявку на участие", exception.getMessage());
-                verify(requestRepository, never()).save(any(ParticipationRequest.class));
-                verify(requestRepository, never()).findByEventIdAndRequesterId(anyLong(), anyLong());
+                verify(requestRepository, never()).save(any(Request.class));
+                verify(requestRepository, never()).existsByEventIdAndRequesterId(anyLong(), anyLong());
                 verify(requestRepository, never()).countConfirmedRequests(anyLong());
         }
 
         @Test
         void cancelRequest_ShouldCancelRequestSuccessfully() {
                 // Arrange
-                participationRequest.setRequester(user); // Устанавливаем, что запрос принадлежит user
+                request.setRequester(user); // Устанавливаем, что запрос принадлежит user
 
                 when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-                when(requestRepository.findById(anyLong())).thenReturn(Optional.of(participationRequest));
+                when(requestRepository.findById(anyLong())).thenReturn(Optional.of(request));
 
                 // Создаем canceled request для мока
-                ParticipationRequest canceledRequest = new ParticipationRequest();
+                Request canceledRequest = new Request();
                 canceledRequest.setId(1L);
                 canceledRequest.setEvent(event);
                 canceledRequest.setRequester(user);
                 canceledRequest.setStatus(RequestStatus.CANCELED);
                 canceledRequest.setCreatedDate(LocalDateTime.now());
 
-                when(requestRepository.save(any(ParticipationRequest.class))).thenReturn(canceledRequest);
+                when(requestRepository.save(any(Request.class))).thenReturn(canceledRequest);
 
-                ParticipationRequestDto canceledDto = new ParticipationRequestDto();
+                RequestDto canceledDto = new RequestDto();
                 canceledDto.setId(1L);
                 canceledDto.setEvent(10L);
                 canceledDto.setRequester(1L);
                 canceledDto.setStatus("CANCELED");
                 canceledDto.setCreated(LocalDateTime.now());
 
-                when(requestMapper.toDto(any(ParticipationRequest.class))).thenReturn(canceledDto);
+                when(requestMapper.toRequestDto(any(Request.class))).thenReturn(canceledDto);
 
                 // Act
-                ParticipationRequestDto result = participationRequestService.cancelRequest(1L, 1L);
+                RequestDto result = requestService.cancelRequest(1L, 1L);
 
                 // Assert
                 assertNotNull(result);
                 assertEquals("CANCELED", result.getStatus());
-                verify(requestRepository, times(1)).save(any(ParticipationRequest.class));
-                verify(requestMapper, times(1)).toDto(any(ParticipationRequest.class));
+                verify(requestRepository, times(1)).save(any(Request.class));
+                verify(requestMapper, times(1)).toRequestDto(any(Request.class));
         }
 }

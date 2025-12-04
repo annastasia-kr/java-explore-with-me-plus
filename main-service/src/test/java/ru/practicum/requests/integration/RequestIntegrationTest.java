@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Sql(scripts = "/test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-class ParticipationRequestIntegrationTest extends BaseIntegrationTest {
+class RequestIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

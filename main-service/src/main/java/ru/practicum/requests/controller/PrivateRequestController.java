@@ -6,8 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.requests.dto.ParticipationRequestDto;
-import ru.practicum.requests.service.ParticipationRequestService;
+import ru.practicum.requests.dto.RequestDto;
+import ru.practicum.requests.service.RequestService;
 
 import java.util.List;
 
@@ -16,32 +16,32 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @Slf4j
-public class PrivateParticipationRequestController {
+public class PrivateRequestController {
 
-    private final ParticipationRequestService participationRequestService;
+    private final RequestService service;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ParticipationRequestDto> getUserRequests(@PathVariable @Positive Long userId) {
+    public List<RequestDto> getUserRequests(@PathVariable @Positive Long userId) {
         log.info("GET /users/{}/requests - получение запросов пользователя", userId);
-        return participationRequestService.getUserRequests(userId);
+        return service.getUserRequests(userId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationRequestDto createParticipationRequest(
+    public RequestDto create(
             @PathVariable @Positive Long userId,
             @RequestParam @NotNull @Positive Long eventId) {
         log.info("POST /users/{}/requests - создание запроса на участие в событии {}", userId, eventId);
-        return participationRequestService.createParticipationRequest(userId, eventId);
+        return service.create(userId, eventId);
     }
 
     @PatchMapping("/{requestId}/cancel")
     @ResponseStatus(HttpStatus.OK)
-    public ParticipationRequestDto cancelRequest(
+    public RequestDto cancelRequest(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long requestId) {
         log.info("PATCH /users/{}/requests/{}/cancel - отмена запроса", userId, requestId);
-        return participationRequestService.cancelRequest(userId, requestId);
+        return service.cancelRequest(userId, requestId);
     }
 }

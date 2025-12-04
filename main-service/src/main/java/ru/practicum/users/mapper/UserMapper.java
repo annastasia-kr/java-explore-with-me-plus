@@ -12,9 +12,9 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
-    User toEntity(NewUserRequest newUserRequest);
+    User toUser(NewUserRequest newUserRequest);
 
-    UserDto toDto(User user);
+    UserDto toUserDto(User user);
 
     UserShortDto toUserShortDto(User user);
 

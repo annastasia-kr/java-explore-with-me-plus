@@ -61,9 +61,9 @@ class UserServiceImplTest {
     @Test
     void createUser_ShouldCreateUserSuccessfully() {
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
-        when(userMapper.toEntity(any(NewUserRequest.class))).thenReturn(user);
+        when(userMapper.toUser(any(NewUserRequest.class))).thenReturn(user);
         when(userRepository.save(any(User.class))).thenReturn(user);
-        when(userMapper.toDto(any(User.class))).thenReturn(userDto);
+        when(userMapper.toUserDto(any(User.class))).thenReturn(userDto);
 
         UserDto result = adminUserService.createUser(newUserRequest);
 
@@ -90,7 +90,7 @@ class UserServiceImplTest {
     void getUsers_WithIds_ShouldReturnFilteredUsers() {
         PageRequest pageRequest = PageRequest.of(0, 10);
         when(userRepository.findAllByIds(anyList(), eq(pageRequest))).thenReturn(List.of(user));
-        when(userMapper.toDto(any(User.class))).thenReturn(userDto);
+        when(userMapper.toUserDto(any(User.class))).thenReturn(userDto);
 
         List<UserDto> result = adminUserService.getUsers(List.of(1L, 2L), 0, 10);
 

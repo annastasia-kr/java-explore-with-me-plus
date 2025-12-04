@@ -6,17 +6,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.events.enums.StateEvent;
 import ru.practicum.events.model.Event;
-import ru.practicum.requests.dto.ParticipationRequestDto;
+import ru.practicum.requests.dto.RequestDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.requests.mapper.ParticipationRequestMapper;
 import ru.practicum.events.repository.EventRepository;
-import ru.practicum.requests.model.ParticipationRequest;
-import ru.practicum.requests.respository.ParticipationRequestRepository;
-import ru.practicum.users.enums.RequestStatus;
+import ru.practicum.requests.mapper.RequestMapper;
+import ru.practicum.requests.model.Request;
+import ru.practicum.requests.repository.RequestRepository;
+import ru.practicum.requests.enums.RequestStatus;
 import ru.practicum.users.model.User;
 import ru.practicum.users.repository.UserRepository;
-import ru.practicum.requests.service.ParticipationRequestService;
+import ru.practicum.requests.service.RequestService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,33 +25,29 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ParticipationRequestServiceImpl implements ParticipationRequestService {
+public class RequestServiceImpl implements RequestService {
 
-    private final ParticipationRequestRepository requestRepository;
+    private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
-    private final ParticipationRequestMapper requestMapper;
+    private final RequestMapper requestMapper;
 
     @Override
     @Transactional(readOnly = true)
-    public List<ParticipationRequestDto> getUserRequests(Long userId) {
-        log.info("Получение запросов пользователя с ID: {}", userId);
-
+    public List<RequestDto> getUserRequests(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
 
-        List<ParticipationRequest> requests = requestRepository.findAllByRequesterId(userId);
+        List<Request> requests = requestRepository.findAllByRequesterId(userId);
 
         return requests.stream()
-                .map(requestMapper::toDto)
+                .map(requestMapper::toRequestDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public ParticipationRequestDto createParticipationRequest(Long userId, Long eventId) {
-        log.info("Создание запроса на участие: userId={}, eventId={}", userId, eventId);
-
+    public RequestDto create(Long userId, Long eventId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
 
@@ -60,13 +56,12 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
         validateRequestCreation(userId, event);
 
-        requestRepository.findByEventIdAndRequesterId(eventId, userId)
-                .ifPresent(request -> {
-                    throw new ConflictException("Запрос на участие уже существует");
-                });
+        if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
+            throw new ConflictException("Запрос на участие уже существует");
+        }
 
         // Создаем запрос и сразу устанавливаем дату создания
-        ParticipationRequest request = new ParticipationRequest();
+        Request request = new Request();
         request.setEvent(event);
         request.setRequester(user);
         request.setStatus(RequestStatus.PENDING);
@@ -77,21 +72,21 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             request.setStatus(RequestStatus.CONFIRMED);
         }
 
-        ParticipationRequest savedRequest = requestRepository.save(request);
+        Request savedRequest = requestRepository.save(request);
         log.info("Запрос на участие создан с ID: {}", savedRequest.getId());
 
-        return requestMapper.toDto(savedRequest);
+        return requestMapper.toRequestDto(savedRequest);
     }
 
     @Override
     @Transactional
-    public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
+    public RequestDto cancelRequest(Long userId, Long requestId) {
         log.info("Отмена запроса: userId={}, requestId={}", userId, requestId);
 
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
 
-        ParticipationRequest request = requestRepository.findById(requestId)
+        Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Запрос на участие с id=" + requestId + " не найден"));
 
         if (!request.getRequester().getId().equals(userId)) {
@@ -99,10 +94,10 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         }
 
         request.setStatus(RequestStatus.CANCELED);
-        ParticipationRequest updatedRequest = requestRepository.save(request);
+        Request updatedRequest = requestRepository.save(request);
         log.info("Запрос на участие с ID {} отменен", requestId);
 
-        return requestMapper.toDto(updatedRequest);
+        return requestMapper.toRequestDto(updatedRequest);
     }
 
     private void validateRequestCreation(Long userId, Event event) {
