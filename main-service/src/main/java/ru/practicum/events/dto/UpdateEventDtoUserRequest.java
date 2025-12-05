@@ -3,6 +3,7 @@ package ru.practicum.events.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import ru.practicum.events.enums.StateActionUser;
 
 import java.time.LocalDateTime;
 
@@ -34,5 +35,5 @@ public class UpdateEventDtoUserRequest {
 
     private LocationDto location;
 
-    private String stateAction;
+    private StateActionUser stateAction;
 }

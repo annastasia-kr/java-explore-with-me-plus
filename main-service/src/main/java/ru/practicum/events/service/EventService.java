@@ -3,6 +3,7 @@ package ru.practicum.events.service;
 import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.events.dto.*;
 import ru.practicum.events.enums.Sort;
+import ru.practicum.events.enums.StateEvent;
 import ru.practicum.requests.dto.EventRequestStatusUpdateResult;
 import ru.practicum.requests.dto.EventRequestStatusUpdateDto;
 import ru.practicum.requests.dto.RequestDto;
@@ -25,7 +26,7 @@ public interface EventService {
 
     EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateDto eventRequestStatusUpdateDto);
 
-    Collection<EventDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories, LocalDateTime rangeStart,
+    Collection<EventDto> getEventsByAdmin(List<Long> users, List<StateEvent> states, List<Long> categories, LocalDateTime rangeStart,
                                           LocalDateTime rangeEnd, Integer from, Integer size);
 
     EventDto updateEventByAdmin(Long eventId, UpdateEventDtoAdminRequest updateEventDtoAdminRequest);

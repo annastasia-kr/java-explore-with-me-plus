@@ -14,6 +14,7 @@ import ru.practicum.StatsDto;
 import ru.practicum.categories.model.Category;
 import ru.practicum.categories.repository.CategoryRepository;
 import ru.practicum.events.dto.*;
+import ru.practicum.events.enums.StateActionUser;
 import ru.practicum.events.mapper.EventMapper;
 import ru.practicum.events.mapper.LocationMapper;
 import ru.practicum.events.model.Event;
@@ -110,12 +111,12 @@ public class EventServiceImpl implements EventService {
             throw new DataConflictException("Operation is not permitted for a published event");
         }
 
-        // Проверка на отмену события
-        if ("CANCEL_REVIEW".equals(updateEventDtoUserRequest.getStateAction())) {
-            if (event.getState() != StateEvent.PENDING) {
-                throw new DataConflictException("Only pending events can be canceled");
+        if (updateEventDtoUserRequest.getStateAction() != null) {
+            if (updateEventDtoUserRequest.getStateAction() == StateActionUser.SEND_TO_REVIEW) {
+                event.setState(StateEvent.PENDING);
+            } else if (updateEventDtoUserRequest.getStateAction() == StateActionUser.CANCEL_REVIEW) {
+                event.setState(StateEvent.CANCELED);
             }
-            event.setState(StateEvent.CANCELED);
         }
 
         if (updateEventDtoUserRequest.getAnnotation() != null && !updateEventDtoUserRequest.getAnnotation().isBlank()) {
@@ -131,7 +132,7 @@ public class EventServiceImpl implements EventService {
         }
         if (updateEventDtoUserRequest.getEventDate() != null) {
             if (!updateEventDtoUserRequest.getEventDate().isAfter(LocalDateTime.now().plusHours(2))) {
-                throw new DataConflictException("The event date must exceed the current timestamp + 2H");
+                throw new ValidationException("The event date must exceed the current timestamp + 2H");
             }
             event.setEventDate(updateEventDtoUserRequest.getEventDate());
         }
@@ -237,14 +238,10 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Collection<EventDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,
+    public Collection<EventDto> getEventsByAdmin(List<Long> users, List<StateEvent> states, List<Long> categories,
             LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
 
-        if (rangeStart == null || rangeEnd == null) {
-            throw new UnexpectedNullException("RangeStart and rangeEnd must not be null");
-        }
-
-        if (rangeStart.isAfter(rangeEnd)) {
+        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("RangeStart is not earlier than rangeEnd");
         }
 
@@ -253,8 +250,8 @@ public class EventServiceImpl implements EventService {
         Root<Event> root = criteriaQuery.from(Event.class);
 
         List<Predicate> predicates = new ArrayList<>();
-        applyUserFilter(predicates, cb, root, users);
-        applyStateFilter(predicates, cb, root, states);
+        applyUserFilter(predicates, root, users);
+        applyStateFilter(predicates, root, states);
         applyCategoryFilter(predicates, root, categories);
         applyDateRangeFilter(predicates, cb, root, rangeStart, rangeEnd);
 
@@ -359,7 +356,7 @@ public class EventServiceImpl implements EventService {
         applyCategoryFilter(predicates, root, categories);
         applyPaidFilter(predicates, cb, root, paid);
         applyDateRangeFilter(predicates, cb, root, rangeStart, rangeEnd);
-        applyStateFilter(predicates, cb, root, List.of(StateEvent.PUBLISHED.name()));
+        applyStateFilter(predicates, root, List.of(StateEvent.PUBLISHED));
 
         if (!predicates.isEmpty()) {
             criteriaQuery.where(cb.and(predicates.toArray(new Predicate[0])));
@@ -413,7 +410,6 @@ public class EventServiceImpl implements EventService {
 
         List<StatsDto> statistics = statsClient.getStats(start, LocalDateTime.now(),
                 List.of(httpServletRequest.getRequestURI()), true).stream()
-                .map(obj -> (StatsDto) obj)
                 .toList();
 
         if (statistics.isEmpty()) {
@@ -449,16 +445,16 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private void applyStateFilter(List<Predicate> predicates, CriteriaBuilder cb, Root<Event> root,
-            List<String> states) {
+    private void applyStateFilter(List<Predicate> predicates, Root<Event> root,
+            List<StateEvent> states) {
         if (states != null && !states.isEmpty()) {
-            predicates.add(cb.in(root.get("state")).value(states));
+            predicates.add(root.get("state").in(states));
         }
     }
 
-    private void applyUserFilter(List<Predicate> predicates, CriteriaBuilder cb, Root<Event> root, List<Long> users) {
+    private void applyUserFilter(List<Predicate> predicates, Root<Event> root, List<Long> users) {
         if (users != null && !users.isEmpty()) {
-            predicates.add(cb.in(root.get("initiator").get("id")).value(users));
+            predicates.add(root.get("initiator").get("id").in(users));
         }
     }
 

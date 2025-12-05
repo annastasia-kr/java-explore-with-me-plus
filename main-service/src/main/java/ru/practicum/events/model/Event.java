@@ -33,7 +33,7 @@ public class Event {
     private String description;
 
     @Transient
-    private Long confirmedRequests;
+    private Long confirmedRequests = 0L;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
