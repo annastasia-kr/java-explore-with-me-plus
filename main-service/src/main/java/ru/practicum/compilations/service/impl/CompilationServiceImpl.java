@@ -17,6 +17,7 @@ import ru.practicum.events.model.Event;
 import ru.practicum.events.repository.EventRepository;
 import ru.practicum.exception.NotFoundException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public List<CompilationDto> findAll(Boolean pinned, Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size);
-        return repository.findByPinned(pinned, page).stream()
+        return repository.findByPinned(pinned, page).getContent().stream()
                 .map(compilation -> {
                     CompilationDto dto = mapper.toCompilationDto(compilation);
                     if (compilation.getEvents() != null) {
@@ -47,7 +48,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public List<CompilationDto> findAll(Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size);
-        return repository.findAll(page).stream()
+        return repository.findAll(page).getContent().stream()
                 .map(compilation -> {
                     CompilationDto dto = mapper.toCompilationDto(compilation);
                     if (compilation.getEvents() != null) {
@@ -100,6 +101,8 @@ public class CompilationServiceImpl implements CompilationService {
         CompilationDto dto = mapper.toCompilationDto(repository.save(newCompilation));
         if (newCompilation.getEvents() != null) {
             dto.setEvents(mapper.toEventShortDtoCollection(newCompilation.getEvents()));
+        } else {
+            dto.setEvents(Collections.emptyList());
         }
         return dto;
     }
@@ -115,6 +118,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public CompilationDto updateById(Long compId, UpdateCompilationRequest o) {
         Compilation existedCompilation = repository.findById(compId)
                 .orElseThrow(() -> {
@@ -131,9 +135,10 @@ public class CompilationServiceImpl implements CompilationService {
             List<Event> events = eventRepository.findAllById(o.getEvents());
             existedCompilation.setEvents(events);
         }
-        CompilationDto dto = mapper.toCompilationDto(existedCompilation);
-        if (existedCompilation.getEvents() != null) {
-            dto.setEvents(mapper.toEventShortDtoCollection(existedCompilation.getEvents()));
+        Compilation savedCompilation = repository.save(existedCompilation);
+        CompilationDto dto = mapper.toCompilationDto(savedCompilation);
+        if (savedCompilation.getEvents() != null) {
+            dto.setEvents(mapper.toEventShortDtoCollection(savedCompilation.getEvents()));
         }
         return dto;
     }

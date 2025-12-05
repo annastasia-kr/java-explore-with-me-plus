@@ -34,5 +34,5 @@ public class UpdateEventDtoUserRequest {
 
     private LocationDto location;
 
-    private String state;
+    private String stateAction;
 }

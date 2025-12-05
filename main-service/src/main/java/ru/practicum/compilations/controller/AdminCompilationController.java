@@ -1,6 +1,7 @@
 package ru.practicum.compilations.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,13 +27,13 @@ public class AdminCompilationController {
 
     @DeleteMapping("/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@RequestParam @Positive Long compId) {
+    public void deleteById(@PathVariable @Positive @NotNull Long compId) {
         service.deleteById(compId);
     }
 
     @PatchMapping("/{compId}")
     @ResponseStatus(HttpStatus.OK)
-    public CompilationDto updateById(@RequestParam @Positive Long compId,
+    public CompilationDto updateById(@PathVariable @Positive @NotNull Long compId,
             @RequestBody @Valid UpdateCompilationRequest o) {
         return service.updateById(compId, o);
     }

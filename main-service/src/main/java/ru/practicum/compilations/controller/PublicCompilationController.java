@@ -23,7 +23,10 @@ public class PublicCompilationController {
     public List<CompilationDto> findAll(@RequestParam(required = false) Boolean pinned,
             @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
             @RequestParam(defaultValue = "10") @Positive Integer size) {
-        return service.findAll(pinned, from, size);
+        if (pinned != null) {
+            return service.findAll(pinned, from, size);
+        }
+        return service.findAll(from, size);
     }
 
     @GetMapping("/{compId}")
