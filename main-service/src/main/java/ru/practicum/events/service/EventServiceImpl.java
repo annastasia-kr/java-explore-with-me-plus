@@ -40,6 +40,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -94,10 +95,8 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException("Event not found"));
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
-        Long views = getEventsViews(event.getCreatedOn(), eventId);
 
-        return eventMapper.toEventDto(eventRepository.findById(eventId).orElseThrow(
-                () -> new NotFoundException("Event not found")), confirmedRequests, views);
+        return eventMapper.toEventDto(event, confirmedRequests, 0L);
 
     }
 
@@ -153,9 +152,8 @@ public class EventServiceImpl implements EventService {
             event.setTitle(updateEventDtoUserRequest.getTitle());
         }
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
-        Long views = getEventsViews(event.getCreatedOn(), eventId);
 
-        return eventMapper.toEventDto(eventRepository.save(event), confirmedRequests, views);
+        return eventMapper.toEventDto(eventRepository.save(event), confirmedRequests, 0L);
     }
 
     @Override
@@ -265,13 +263,24 @@ public class EventServiceImpl implements EventService {
 
         List<Event> events = typedQuery.getResultList();
 
+        if(events.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> eventIds = events.stream()
+                .map(Event::getId)
+                .toList();
+
+        Map<Long, Long> confirmedRequestsMap = requestRepository.countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED)
+                .stream()
+                .collect(Collectors.toMap(
+                        EventResult::getEventId,
+                        EventResult::getCount));
+
         return events.stream()
                 .map(event -> {
-                    Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(),
-                            RequestStatus.CONFIRMED);
-                    Long views = getEventsViews(event.getCreatedOn(), event.getId());
-
-                    return eventMapper.toEventDto(event, confirmedRequests, views);
+                    Long confirmedRequests = (confirmedRequestsMap != null) ? confirmedRequestsMap.getOrDefault(event.getId(), 0L) : 0L;
+                    return eventMapper.toEventDto(event, confirmedRequests, 0L);
                 })
                 .toList();
     }
@@ -333,8 +342,7 @@ public class EventServiceImpl implements EventService {
         }
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(),
                 RequestStatus.CONFIRMED);
-        Long views = getEventsViews(event.getCreatedOn(), event.getId());
-        return eventMapper.toEventDto(eventRepository.save(event), confirmedRequests, views);
+        return eventMapper.toEventDto(eventRepository.save(event), confirmedRequests, 0L);
     }
 
     @Override
@@ -373,24 +381,50 @@ public class EventServiceImpl implements EventService {
 
         statsClient.saveHit(MAIN_SERVICE, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr());
 
-        if (onlyAvailable) {
-            return events.stream()
-                    .filter(event -> event.getParticipantLimit() == 0
-                            || event.getConfirmedRequests() < event.getParticipantLimit())
-                    .map(event -> {
-                        Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(),
-                                RequestStatus.CONFIRMED);
-                        Long views = getEventsViews(event.getCreatedOn(), event.getId());
-
-                        return eventMapper.toEventDto(event, confirmedRequests, views);
-                    })
-                    .toList();
+        if (events.isEmpty()) {
+            return List.of();
         }
+
+        List<Long> eventIds = events.stream()
+                .map(Event::getId)
+                .toList();
+
+        Map<Long, Long> confirmedRequestsMap = requestRepository.countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED)
+                .stream()
+                .collect(Collectors.toMap(
+                        EventResult::getEventId,
+                        EventResult::getCount));
+
+        LocalDateTime minStartDate = events.stream()
+                .map(Event::getPublishedOn)
+                .min(LocalDateTime::compareTo) // минимум
+                .orElse(LocalDateTime.now());
+
+
+        List<StatsDto> statistics = statsClient.getStats(minStartDate, LocalDateTime.now(),
+                            List.of(httpServletRequest.getRequestURI()), true).stream()
+                .toList();
+
+        Map<String, Long> hits = statistics.stream()
+                .collect(Collectors.toMap(
+                        StatsDto::getUri,
+                        StatsDto::getHits
+                ));
+
+        Map<Long, Long> eventsIdWithHits = eventIds.stream()
+                .collect(Collectors.toMap(
+                        num -> num,
+                        num -> hits.getOrDefault(URI + num, 0L)
+                ));
+
         return events.stream()
+                .filter(event -> !onlyAvailable ||
+                        event.getParticipantLimit() == 0 ||
+                        ((confirmedRequestsMap != null) ? confirmedRequestsMap.getOrDefault(event.getId(), 0L) : 0L) < event.getParticipantLimit()
+                )
                 .map(event -> {
-                    Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(),
-                            RequestStatus.CONFIRMED);
-                    Long views = getEventsViews(event.getCreatedOn(), event.getId());
+                    Long confirmedRequests = (confirmedRequestsMap != null) ? confirmedRequestsMap.getOrDefault(event.getId(), 0L) : 0L;
+                    Long views = eventsIdWithHits.getOrDefault(event.getId(), 0L);
 
                     return eventMapper.toEventDto(event, confirmedRequests, views);
                 })
@@ -404,24 +438,14 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(StateEvent.PUBLISHED)) {
             throw new NotFoundException("Event must be published");
         }
-        statsClient.saveHit("main-service", httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr());
+        statsClient.saveHit(MAIN_SERVICE, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr());
 
         LocalDateTime start = event.getPublishedOn() == null ? event.getCreatedOn() : event.getPublishedOn();
-
-        List<StatsDto> statistics = statsClient.getStats(start, LocalDateTime.now(),
-                List.of(httpServletRequest.getRequestURI()), true).stream()
-                .toList();
-
-        if (statistics.isEmpty()) {
-            event.setViews(0L);
-        } else {
-            event.setViews(statistics.get(0).getHits());
-        }
 
         eventRepository.save(event);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(),
                 RequestStatus.CONFIRMED);
-        Long views = getEventsViews(event.getCreatedOn(), event.getId());
+        Long views = getEventViews(start, event.getId());
         return eventMapper.toEventDto(event, confirmedRequests, views);
     }
 
@@ -478,7 +502,7 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private Long getEventsViews(LocalDateTime createdOn, Long eventId) {
+    private Long getEventViews(LocalDateTime createdOn, Long eventId) {
         List<StatsDto> stat = statsClient.getStats(createdOn, LocalDateTime.now(),
                 List.of(URI + eventId), true);
         if (stat.isEmpty()) {

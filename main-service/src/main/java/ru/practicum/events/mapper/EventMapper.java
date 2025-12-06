@@ -31,7 +31,6 @@ public interface EventMapper {
     @Mapping(target = "createdOn", expression = "java(LocalDateTime.now())")
     @Mapping(target = "confirmedRequests", constant = "0L")
     @Mapping(target = "state", constant = "PENDING")
-    @Mapping(target = "views", constant = "0L")
     @Mapping(target = "participantLimit", expression = "java(newEventDto.getParticipantLimit() == null ? 0L : newEventDto.getParticipantLimit())")
     @Mapping(target = "requestModeration", expression = "java(newEventDto.getRequestModeration() == null ? true : newEventDto.getRequestModeration())")
     Event toEvent(NewEventDto newEventDto, Category category, User initiator, Location location);
@@ -52,7 +51,7 @@ public interface EventMapper {
     @Mapping(source = "eventDate", target = "eventDate")
     @Mapping(source = "paid", target = "paid")
     @Mapping(source = "participantLimit", target = "participantLimit")
-    @Mapping(source = "views", target = "views")
+    @Mapping(target = "views", constant = "0L")
     EventShortDto toEventShortDto(Event event);
 
 }

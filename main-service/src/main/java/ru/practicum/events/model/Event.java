@@ -61,9 +61,6 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private StateEvent state;
 
-    @Transient
-    private Long views = 0L;
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
