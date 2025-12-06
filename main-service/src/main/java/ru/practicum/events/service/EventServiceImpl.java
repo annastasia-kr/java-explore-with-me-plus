@@ -263,7 +263,7 @@ public class EventServiceImpl implements EventService {
 
         List<Event> events = typedQuery.getResultList();
 
-        if(events.isEmpty()) {
+        if (events.isEmpty()) {
             return List.of();
         }
 
