@@ -1,7 +1,9 @@
 package ru.practicum.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -21,29 +23,35 @@ public class StatsClientImpl implements StatsClient {
 
     private final RestClient restClient;
     private final String baseUrl;
+    private final String app;
 
     @Autowired
-    public StatsClientImpl() {
-        this(System.getenv().getOrDefault("STATS_SERVER_URL", "http://localhost:9090"));
-    }
-
-    public StatsClientImpl(String baseUrl) {
+    public StatsClientImpl(@Value("${stats-server.url:http://localhost:9090}") String baseUrl,
+            @Value("${stats-server.app:main-service}") String app) {
         this.baseUrl = baseUrl;
+        this.app = app;
         this.restClient = RestClient.create(baseUrl);
     }
 
     public StatsClientImpl(RestClient restClient, String baseUrl) {
         this.restClient = restClient;
         this.baseUrl = baseUrl;
+        this.app = "main-service";
+    }
+
+    public StatsClientImpl(RestClient restClient, String baseUrl, String app) {
+        this.restClient = restClient;
+        this.baseUrl = baseUrl;
+        this.app = app;
     }
 
     @Override
-    public void saveHit(String app, String uri, String ip) {
+    public void saveHit(HttpServletRequest request) {
         try {
             Map<String, Object> hitData = new HashMap<>();
             hitData.put("app", app);
-            hitData.put("uri", uri);
-            hitData.put("ip", ip);
+            hitData.put("uri", request.getRequestURI());
+            hitData.put("ip", request.getRemoteAddr());
             hitData.put("timestamp", LocalDateTime.now().format(FORMATTER));
 
             ResponseEntity<Void> response = restClient.post()
@@ -53,7 +61,8 @@ public class StatsClientImpl implements StatsClient {
                     .toBodilessEntity();
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.debug("Hit saved: app={}, uri={}, ip={}", app, uri, ip);
+                log.debug("Hit saved: app={}, uri={}, ip={}", app, request.getRequestURI(),
+                        request.getRemoteAddr());
             } else {
                 log.error("Failed to save hit. Status: {}", response.getStatusCode());
             }
