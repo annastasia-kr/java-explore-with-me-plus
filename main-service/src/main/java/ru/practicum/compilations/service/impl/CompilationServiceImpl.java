@@ -2,6 +2,7 @@ package ru.practicum.compilations.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,21 +35,14 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public List<CompilationDto> findAll(Boolean pinned, Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size);
-        return repository.findByPinned(pinned, page).getContent().stream()
-                .map(compilation -> {
-                    CompilationDto dto = mapper.toCompilationDto(compilation);
-                    if (compilation.getEvents() != null) {
-                        dto.setEvents(mapper.toEventShortDtoCollection(compilation.getEvents()));
-                    }
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
+        Page<Compilation> compilations;
 
-    @Override
-    public List<CompilationDto> findAll(Integer from, Integer size) {
-        Pageable page = PageRequest.of(from / size, size);
-        return repository.findAll(page).getContent().stream()
+        if (pinned != null) {
+            compilations = repository.findByPinned(pinned, page);
+        } else {
+            compilations = repository.findAll(page);
+        }
+        return compilations.getContent().stream()
                 .map(compilation -> {
                     CompilationDto dto = mapper.toCompilationDto(compilation);
                     if (compilation.getEvents() != null) {
@@ -76,18 +70,18 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     @Transactional
-    public CompilationDto create(NewCompilationDto o) {
-        Compilation newCompilation = mapper.toCompilation(o);
+    public CompilationDto create(NewCompilationDto newCompilationData) {
+        Compilation newCompilation = mapper.toCompilation(newCompilationData);
 
-        if (o.getEvents() != null && !o.getEvents().isEmpty()) {
-            List<Event> events = eventRepository.findAllById(o.getEvents());
+        if (newCompilationData.getEvents() != null && !newCompilationData.getEvents().isEmpty()) {
+            List<Event> events = eventRepository.findAllById(newCompilationData.getEvents());
 
-            if (events.size() != o.getEvents().size()) {
+            if (events.size() != newCompilationData.getEvents().size()) {
                 Set<Long> foundEventIds = events.stream()
                         .map(Event::getId)
                         .collect(Collectors.toSet());
 
-                List<Long> notFoundEventIds = o.getEvents().stream()
+                List<Long> notFoundEventIds = newCompilationData.getEvents().stream()
                         .filter(id -> !foundEventIds.contains(id))
                         .collect(Collectors.toList());
 
@@ -119,20 +113,20 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     @Transactional
-    public CompilationDto updateById(Long compId, UpdateCompilationRequest o) {
+    public CompilationDto updateById(Long compId, UpdateCompilationRequest compilationData) {
         Compilation existedCompilation = repository.findById(compId)
                 .orElseThrow(() -> {
                     log.error("Подборка с id={} не найдена", compId);
                     return new NotFoundException(String.format("Подборка с id=%s не найдена", compId));
                 });
-        if (o.getPinned() != null) {
-            existedCompilation.setPinned(o.getPinned());
+        if (compilationData.getPinned() != null) {
+            existedCompilation.setPinned(compilationData.getPinned());
         }
-        if (o.getTitle() != null && !o.getTitle().isBlank()) {
-            existedCompilation.setTitle(o.getTitle());
+        if (compilationData.getTitle() != null && !compilationData.getTitle().isBlank()) {
+            existedCompilation.setTitle(compilationData.getTitle());
         }
-        if (o.getEvents() != null) {
-            List<Event> events = eventRepository.findAllById(o.getEvents());
+        if (compilationData.getEvents() != null) {
+            List<Event> events = eventRepository.findAllById(compilationData.getEvents());
             existedCompilation.setEvents(events);
         }
         Compilation savedCompilation = repository.save(existedCompilation);

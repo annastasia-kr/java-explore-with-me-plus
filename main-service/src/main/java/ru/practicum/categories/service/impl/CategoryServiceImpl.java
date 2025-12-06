@@ -3,6 +3,7 @@ package ru.practicum.categories.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -50,16 +51,16 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryDto create(NewCategoryDto o) {
-        Category newCategory = mapper.toCategory(o);
-
-        if (repository.existsByName(newCategory.getName())) {
+    public CategoryDto create(NewCategoryDto newCategoryData) throws DataConflictException {
+        Category newCategory = mapper.toCategory(newCategoryData);
+        try {
+            return mapper.toCategoryDto(repository.save(newCategory));
+        } catch (DataIntegrityViolationException err) {
             log.error("Категория с name={} уже существует", newCategory.getName());
             throw new DataConflictException(
                     String.format("Категория с name=%s уже существует", newCategory.getName()));
         }
 
-        return mapper.toCategoryDto(repository.save(newCategory));
     }
 
     @Override
@@ -79,19 +80,20 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryDto updateById(Long catId, NewCategoryDto o) {
+    public CategoryDto updateById(Long catId, NewCategoryDto categoryData) {
         Category existedCategory = repository.findById(catId)
                 .orElseThrow(() -> {
                     log.error("Категория с id={} не найдена", catId);
                     return new NotFoundException(String.format("Категория с id=%s не найдена", catId));
                 });
 
-        if (repository.existsByNameAndIdNot(o.getName(), catId)) {
-            log.error("Категория с name={} уже существует", o.getName());
-            throw new DataConflictException(String.format("Категория с name=%s уже существует", o.getName()));
+        if (repository.existsByNameAndIdNot(categoryData.getName(), catId)) {
+            log.error("Категория с name={} уже существует", categoryData.getName());
+            throw new DataConflictException(
+                    String.format("Категория с name=%s уже существует", categoryData.getName()));
         }
 
-        existedCategory.setName(o.getName());
+        existedCategory.setName(categoryData.getName());
         return mapper.toCategoryDto(existedCategory);
     }
 }

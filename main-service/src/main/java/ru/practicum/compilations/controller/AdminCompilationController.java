@@ -21,8 +21,8 @@ public class AdminCompilationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CompilationDto create(@RequestBody @Valid NewCompilationDto o) {
-        return service.create(o);
+    public CompilationDto create(@RequestBody @Valid NewCompilationDto newCompilationData) {
+        return service.create(newCompilationData);
     }
 
     @DeleteMapping("/{compId}")
@@ -32,9 +32,8 @@ public class AdminCompilationController {
     }
 
     @PatchMapping("/{compId}")
-    @ResponseStatus(HttpStatus.OK)
     public CompilationDto updateById(@PathVariable @Positive @NotNull Long compId,
-            @RequestBody @Valid UpdateCompilationRequest o) {
-        return service.updateById(compId, o);
+            @RequestBody @Valid UpdateCompilationRequest compilationData) {
+        return service.updateById(compId, compilationData);
     }
 }
