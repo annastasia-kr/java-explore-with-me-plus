@@ -403,7 +403,7 @@ public class EventServiceImpl implements EventService {
                 .min(LocalDateTime::compareTo) // минимум
                 .orElse(LocalDateTime.now());
 
-
+        // статистика для каждого ивента
         List<StatsDto> statistics = statsClient.getStats(minStartDate, LocalDateTime.now(),
                (eventIds.stream()
                                 .map(id -> URI + id)
