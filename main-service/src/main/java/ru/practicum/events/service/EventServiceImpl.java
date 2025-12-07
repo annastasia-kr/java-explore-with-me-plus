@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
 
-    private static final String MAIN_SERVICE = "main-service";
     private static final String URI = "/events/";
 
     private final EventRepository eventRepository;
@@ -271,7 +270,8 @@ public class EventServiceImpl implements EventService {
                 .map(Event::getId)
                 .toList();
 
-        Map<Long, Long> confirmedRequestsMap = requestRepository.countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED)
+        Map<Long, Long> confirmedRequestsMap = requestRepository
+                .countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED)
                 .stream()
                 .collect(Collectors.toMap(
                         EventResult::getEventId,
@@ -279,7 +279,9 @@ public class EventServiceImpl implements EventService {
 
         return events.stream()
                 .map(event -> {
-                    Long confirmedRequests = (confirmedRequestsMap != null) ? confirmedRequestsMap.getOrDefault(event.getId(), 0L) : 0L;
+                    Long confirmedRequests = (confirmedRequestsMap != null)
+                            ? confirmedRequestsMap.getOrDefault(event.getId(), 0L)
+                            : 0L;
                     return eventMapper.toEventDto(event, confirmedRequests, 0L);
                 })
                 .toList();
@@ -379,7 +381,7 @@ public class EventServiceImpl implements EventService {
 
         List<Event> events = typedQuery.getResultList();
 
-        statsClient.saveHit(MAIN_SERVICE, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr());
+        statsClient.saveHit(httpServletRequest);
 
         if (events.isEmpty()) {
             return List.of();
@@ -389,7 +391,8 @@ public class EventServiceImpl implements EventService {
                 .map(Event::getId)
                 .toList();
 
-        Map<Long, Long> confirmedRequestsMap = requestRepository.countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED)
+        Map<Long, Long> confirmedRequestsMap = requestRepository
+                .countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED)
                 .stream()
                 .collect(Collectors.toMap(
                         EventResult::getEventId,
@@ -400,6 +403,7 @@ public class EventServiceImpl implements EventService {
                 .min(LocalDateTime::compareTo) // минимум
                 .orElse(LocalDateTime.now());
 
+
         List<StatsDto> statistics = statsClient.getStats(minStartDate, LocalDateTime.now(),
                (eventIds.stream()
                                 .map(id -> URI + id)
@@ -409,22 +413,22 @@ public class EventServiceImpl implements EventService {
         Map<String, Long> hits = statistics.stream()
                 .collect(Collectors.toMap(
                         StatsDto::getUri,
-                        StatsDto::getHits
-                ));
+                        StatsDto::getHits));
 
         Map<Long, Long> eventsIdWithHits = eventIds.stream()
                 .collect(Collectors.toMap(
                         num -> num,
-                        num -> hits.getOrDefault(URI + num, 0L)
-                ));
+                        num -> hits.getOrDefault(URI + num, 0L)));
 
         return events.stream()
                 .filter(event -> !onlyAvailable ||
                         event.getParticipantLimit() == 0 ||
-                        ((confirmedRequestsMap != null) ? confirmedRequestsMap.getOrDefault(event.getId(), 0L) : 0L) < event.getParticipantLimit()
-                )
+                        ((confirmedRequestsMap != null) ? confirmedRequestsMap.getOrDefault(event.getId(), 0L)
+                                : 0L) < event.getParticipantLimit())
                 .map(event -> {
-                    Long confirmedRequests = (confirmedRequestsMap != null) ? confirmedRequestsMap.getOrDefault(event.getId(), 0L) : 0L;
+                    Long confirmedRequests = (confirmedRequestsMap != null)
+                            ? confirmedRequestsMap.getOrDefault(event.getId(), 0L)
+                            : 0L;
                     Long views = eventsIdWithHits.getOrDefault(event.getId(), 0L);
 
                     return eventMapper.toEventDto(event, confirmedRequests, views);
@@ -439,7 +443,7 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(StateEvent.PUBLISHED)) {
             throw new NotFoundException("Event must be published");
         }
-        statsClient.saveHit(MAIN_SERVICE, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr());
+        statsClient.saveHit(httpServletRequest);
 
         LocalDateTime start = event.getPublishedOn() == null ? event.getCreatedOn() : event.getPublishedOn();
 
