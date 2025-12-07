@@ -400,10 +400,11 @@ public class EventServiceImpl implements EventService {
                 .min(LocalDateTime::compareTo) // минимум
                 .orElse(LocalDateTime.now());
 
-
         List<StatsDto> statistics = statsClient.getStats(minStartDate, LocalDateTime.now(),
-                            List.of(httpServletRequest.getRequestURI()), true).stream()
-                .toList();
+               (eventIds.stream()
+                                .map(id -> URI + id)
+                                .toList()), true).stream()
+                        .toList();
 
         Map<String, Long> hits = statistics.stream()
                 .collect(Collectors.toMap(
