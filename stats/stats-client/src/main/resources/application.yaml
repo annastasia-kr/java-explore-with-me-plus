@@ -1,0 +1,3 @@
+stats-server:
+  url: "http://localhost:9090"
+  app: "main-service"

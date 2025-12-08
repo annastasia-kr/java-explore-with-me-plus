@@ -1,10 +1,10 @@
 package ru.practicum.service;
 
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.model.Hit;
 import ru.practicum.repository.StatsRepository;
 import ru.practicum.HitDto;
@@ -36,7 +36,8 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public Collection<StatsDto> get(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-
+        if (start == null || end == null)
+            throw new ValidationException("The start date and end date must be not null.");
         if (start.isAfter(end))
             throw new ValidationException("The start date must be earlier than the end date.");
 

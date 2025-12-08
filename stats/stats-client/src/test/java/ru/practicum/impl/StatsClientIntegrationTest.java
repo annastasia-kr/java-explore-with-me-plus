@@ -2,6 +2,7 @@ package ru.practicum.impl;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
+import ru.practicum.StatsDto;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -14,34 +15,39 @@ class StatsClientIntegrationTest {
 
     @Test
     void constructor_WithBaseUrl_ShouldCreateClient() {
-        StatsClientImpl client = new StatsClientImpl("http://localhost:9090");
+        StatsClientImpl client = new StatsClientImpl(RestClient.create(), "http://localhost:9090", "main-service");
         assertNotNull(client);
     }
 
     @Test
     void constructor_WithRestClient_ShouldCreateClient() {
         RestClient restClient = RestClient.create();
-        StatsClientImpl client = new StatsClientImpl(restClient, "http://localhost:9090");
+        StatsClientImpl client = new StatsClientImpl(restClient, "http://localhost:9090", "main-service");
         assertNotNull(client);
     }
 
     @Test
     void saveHit_WithInvalidServer_ShouldNotThrowException() {
-        StatsClientImpl client = new StatsClientImpl("http://invalid-server:9999");
+        StatsClientImpl client = new StatsClientImpl(RestClient.create(), "http://invalid-server:9999", "main-service");
 
-        assertDoesNotThrow(() -> client.saveHit("test-app", "/test", "127.0.0.1"));
+        // Создаем mock HttpServletRequest для теста
+        jakarta.servlet.http.HttpServletRequest mockRequest = org.mockito.Mockito
+                .mock(jakarta.servlet.http.HttpServletRequest.class);
+        org.mockito.Mockito.when(mockRequest.getRequestURI()).thenReturn("/test");
+        org.mockito.Mockito.when(mockRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+
+        assertDoesNotThrow(() -> client.saveHit(mockRequest));
     }
 
     @Test
     void getStats_WithInvalidServer_ShouldReturnEmptyList() {
-        StatsClientImpl client = new StatsClientImpl("http://invalid-server:9999");
+        StatsClientImpl client = new StatsClientImpl(RestClient.create(), "http://invalid-server:9999", "main-service");
 
-        List<Object> result = client.getStats(
+        List<StatsDto> result = client.getStats(
                 LocalDateTime.now().minusDays(1),
                 LocalDateTime.now(),
                 List.of("/events/1", "/events/2"),
-                true
-        );
+                true);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -49,14 +55,13 @@ class StatsClientIntegrationTest {
 
     @Test
     void getStats_WithNullUrisAndUnique_ShouldReturnEmptyList() {
-        StatsClientImpl client = new StatsClientImpl("http://invalid-server:9999");
+        StatsClientImpl client = new StatsClientImpl(RestClient.create(), "http://invalid-server:9999", "main-service");
 
-        List<Object> result = client.getStats(
+        List<StatsDto> result = client.getStats(
                 LocalDateTime.now().minusDays(1),
                 LocalDateTime.now(),
                 null,
-                null
-        );
+                null);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -68,8 +73,7 @@ class StatsClientIntegrationTest {
         List<Object> stats = List.of(
                 createStatMap("service1", "/events/1", 10),
                 createStatMap("service2", "/events/2", 5),
-                createStatMap("service3", "/events/1", 8)
-        );
+                createStatMap("service3", "/events/1", 8));
 
         Long result = extractHitsForUri("/events/1", stats);
         assertEquals(10L, result); // Должен вернуть первое совпадение
@@ -79,8 +83,7 @@ class StatsClientIntegrationTest {
     void extractHitsFromStats_WithNoMatchingUri_ShouldReturnZero() {
         List<Object> stats = List.of(
                 createStatMap("service1", "/events/1", 10),
-                createStatMap("service2", "/events/2", 5)
-        );
+                createStatMap("service2", "/events/2", 5));
 
         Long result = extractHitsForUri("/events/3", stats);
         assertEquals(0L, result);
@@ -112,8 +115,7 @@ class StatsClientIntegrationTest {
     void extractHitsFromStats_WithNonMapObject_ShouldReturnZero() {
         List<Object> stats = List.of(
                 "invalid object", // Не Map объект
-                createStatMap("service1", "/events/1", 10)
-        );
+                createStatMap("service1", "/events/1", 10));
 
         Long result = extractHitsForUri("/events/1", stats);
         assertEquals(10L, result); // Должен проигнорировать не-Map объект
