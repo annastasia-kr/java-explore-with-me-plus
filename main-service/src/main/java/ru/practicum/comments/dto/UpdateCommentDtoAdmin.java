@@ -8,7 +8,7 @@ import ru.practicum.comments.enums.StateComment;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateCommentDtoAdminRequest {
+public class UpdateCommentDtoAdmin {
 
     private StateComment state;
 }

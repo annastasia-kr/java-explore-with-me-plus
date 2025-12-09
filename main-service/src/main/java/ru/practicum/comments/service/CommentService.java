@@ -1,28 +1,21 @@
 package ru.practicum.comments.service;
 
-import ru.practicum.comments.dto.CommentDto;
-import ru.practicum.comments.dto.NewCommentDto;
-import ru.practicum.comments.dto.UpdateCommentDtoAdminRequest;
-import ru.practicum.comments.dto.UpdateCommentDtoUserRequest;
+import ru.practicum.comments.dto.*;
 import ru.practicum.comments.enums.StateComment;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 
 public interface CommentService {
-    Collection<CommentDto> getCommentsByAdmin(Integer from, Integer size, StateComment state);
+    Collection<CommentDetailDto> getCommentsByAdmin(Integer from, Integer size, List<StateComment> state, List<Long> authorsIds, Long eventId);
 
-    Collection<CommentDto> getCommentsByEventId(Integer from, Integer size, Long eventId);
+    CommentDetailDto moderateCommentById(Long commentId, Long eventId, UpdateCommentDtoAdmin updateCommentDtoAdmin);
 
-    CommentDto moderateCommentById(Long commentId, UpdateCommentDtoAdminRequest updateCommentDtoAdminRequest);
+    CommentDetailDto createComment(Long eventId, CreateCommentDto createCommentDto);
 
-    Collection<CommentDto> getCommentsByUserId(Long userId, Integer from, Integer size);
+    CommentDetailDto updateCommentByUser(Long eventId, Long commentId, UpdateCommentDto updateCommentDto);
 
-    CommentDto createComment(Long userId, Long eventId, NewCommentDto newCommentDto);
+    void deleteComment();
 
-    CommentDto updateCommentByUser(Long userId, Long commentId, UpdateCommentDtoUserRequest updateCommentDtoUserRequest);
-
-    void deleteComment(Long userId, Long commentId);
-
-    Collection<CommentDto> getEventCommentsPublic(Long eventId, LocalDateTime created, Integer from, Integer size);
+    CommentDetailDto getCommentById(Long commentId, Long eventId);
 }
