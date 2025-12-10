@@ -1,10 +1,9 @@
-FROM eclipse-temurin:21-jre-jammy
+FROM openjdk:11-jre-slim
 
 WORKDIR /app
 
-# Копируем собранный JAR
-COPY main-service/target/main-service-0.0.1-SNAPSHOT.jar app.jar
+COPY target/explore-with-me-moderation-*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8081
 
-ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

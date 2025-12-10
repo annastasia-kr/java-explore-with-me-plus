@@ -1,0 +1,75 @@
+# Конфигурация для расширенной модерации
+moderation:
+  auto-moderation:
+    enabled: true
+    schedule: "0 0 * * * *" # каждый час
+
+  queue:
+    max-size: 1000
+    max-assignments-per-moderator: 5
+    escalation-threshold-hours: 24
+
+  content-analysis:
+    enable-sentiment: true
+    enable-keyword-filtering: true
+    enable-pattern-detection: true
+    spam-threshold: 0.5
+    toxicity-threshold: 0.4
+
+  notifications:
+    email:
+      enabled: true
+      from: moderation@explorewithme.com
+      admin-email: admin@explorewithme.com
+    slack:
+      enabled: false
+      webhook-url: ""
+
+  reports:
+    daily:
+      enabled: true
+      time: "08:00"
+      recipients: "admin@explorewithme.com"
+    weekly:
+      enabled: true
+      day: "MONDAY"
+      time: "09:00"
+
+  rules:
+    default-priority: 1
+    auto-apply: true
+
+# Настройки почты
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME:}
+    password: ${EMAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Quartz настройки (если используется)
+spring:
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: ModerationScheduler
+            instanceId: AUTO
+          threadPool:
+            threadCount: 10
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+            tablePrefix: QRTZ_
+            isClustered: true
+            clusterCheckinInterval: 20000
