@@ -18,6 +18,8 @@ public class CommentDto {
 
     private Long authorId;
 
+    private Long eventId;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime created;
 

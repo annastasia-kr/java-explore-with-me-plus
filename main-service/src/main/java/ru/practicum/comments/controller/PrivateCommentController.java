@@ -35,10 +35,4 @@ public class PrivateCommentController {
         return commentService.updateCommentByUser(eventId, commentId, updateCommentDto);
     }
 
-    @DeleteMapping("/{commentId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment() {
-        commentService.deleteComment();
-    }
-
 }

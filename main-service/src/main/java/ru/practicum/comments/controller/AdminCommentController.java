@@ -22,6 +22,15 @@ public class AdminCommentController {
 
     private final CommentService commentService;
 
+    @DeleteMapping("/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(
+            @PathVariable Long eventId,
+            @PathVariable Long commentId) {
+
+        commentService.deleteComment(eventId, commentId);
+    }
+
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Collection<CommentDetailDto> getCommentsByAdmin(@PathVariable @Positive Long eventId,

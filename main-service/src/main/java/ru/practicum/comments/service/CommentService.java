@@ -15,7 +15,11 @@ public interface CommentService {
 
     CommentDetailDto updateCommentByUser(Long eventId, Long commentId, UpdateCommentDto updateCommentDto);
 
-    void deleteComment();
-
     CommentDetailDto getCommentById(Long commentId, Long eventId);
+
+    void deleteComment(Long eventId, Long commentId);
+
+    public List<CommentDto> getApprovedCommentsForEvent(Long eventId);
+
+    public List<CommentDto> getApprovedCommentsForEvents(List<Long> eventIds);
 }

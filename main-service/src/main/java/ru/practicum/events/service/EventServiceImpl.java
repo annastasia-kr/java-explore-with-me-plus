@@ -13,6 +13,8 @@ import ru.practicum.StatsClient;
 import ru.practicum.StatsDto;
 import ru.practicum.categories.model.Category;
 import ru.practicum.categories.repository.CategoryRepository;
+import ru.practicum.comments.dto.CommentDto;
+import ru.practicum.comments.service.CommentService;
 import ru.practicum.events.dto.*;
 import ru.practicum.events.enums.StateActionUser;
 import ru.practicum.events.mapper.EventMapper;
@@ -39,6 +41,7 @@ import ru.practicum.users.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +52,7 @@ import java.util.stream.Collectors;
 public class EventServiceImpl implements EventService {
 
     private static final String URI = "/events/";
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
@@ -60,6 +64,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
     private final LocationMapper locationMapper;
     private final RequestMapper requestMapper;
+    private final CommentService commentService;
 
     @Override
     public Collection<EventShortDto> getEventsByUserId(Long userId, Integer from, Integer size) {
@@ -69,6 +74,21 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findAllByInitiatorId(userId, page).stream()
                 .map(eventMapper::toEventShortDto)
                 .toList();
+    }
+
+    // Пункт 7: Получение списка событий с комментариями
+    public List<EventShortDto> getEventsWithComments(String text, List<Long> categories, Boolean paid,
+                                                     String rangeStart, String rangeEnd, Boolean onlyAvailable,
+                                                     String sort, Integer from, Integer size) {
+
+        log.info("Getting events with comments");
+
+        LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, FORMATTER) : null;
+        LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, FORMATTER) : null;
+
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        return null;
     }
 
     @Override
@@ -391,6 +411,11 @@ public class EventServiceImpl implements EventService {
                 .map(Event::getId)
                 .toList();
 
+        List<CommentDto> allComments = commentService.getApprovedCommentsForEvents(eventIds);
+
+        Map<Long, List<CommentDto>> commentsByEventId = allComments.stream()
+                .collect(Collectors.groupingBy(CommentDto::getEventId));
+
         Map<Long, Long> confirmedRequestsMap = requestRepository
                 .countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED)
                 .stream()
@@ -431,7 +456,14 @@ public class EventServiceImpl implements EventService {
                             : 0L;
                     Long views = eventsIdWithHits.getOrDefault(event.getId(), 0L);
 
-                    return eventMapper.toEventDto(event, confirmedRequests, views);
+                    // Создаём DTO
+                    EventDto eventDto = eventMapper.toEventDto(event, confirmedRequests, views);
+
+                    // 4. Добавляем комментарии из Map (если есть)
+                    List<CommentDto> comments = commentsByEventId.getOrDefault(event.getId(), List.of());
+                    eventDto.setComments(comments);
+
+                    return eventDto;
                 })
                 .toList();
     }
@@ -451,7 +483,11 @@ public class EventServiceImpl implements EventService {
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(),
                 RequestStatus.CONFIRMED);
         Long views = getEventViews(start, event.getId());
-        return eventMapper.toEventDto(event, confirmedRequests, views);
+        // Получаем APPROVED комментарии для этого события
+        List<CommentDto> comments = commentService.getApprovedCommentsForEvent(eventId);
+        EventDto eventDto = eventMapper.toEventDto(event, confirmedRequests, views);
+        eventDto.setComments(comments);
+        return eventDto;
     }
 
     private Location getEventLocation(LocationDto locationDto) {

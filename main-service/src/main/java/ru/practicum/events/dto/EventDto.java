@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.categories.dto.CategoryDto;
+import ru.practicum.comments.dto.CommentDto;
 import ru.practicum.events.enums.StateEvent;
 import ru.practicum.users.dto.UserShortDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -49,4 +51,7 @@ public class EventDto {
     private StateEvent state;
 
     private Long views;
+
+    // Добавляем поле comments
+    private List<CommentDto> comments;
 }

@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -84,7 +85,7 @@ public class CommentServiceImpl implements CommentService {
             throw new DataConflictException("The comment is not associated with the given event");
         }
 
-        if(updateCommentDtoAdmin.getState() != null) {
+        if (updateCommentDtoAdmin.getState() != null) {
             comment.setState(updateCommentDtoAdmin.getState());
         }
         return commentMapper.toCommentDetailDto(commentRepository.save(comment));
@@ -121,7 +122,7 @@ public class CommentServiceImpl implements CommentService {
         if (!comment.getAuthor().getId().equals(updateCommentDto.getAuthorId())) {
             throw new AccessDeniedForUserException("User is not the author of this comment");
         }
-        if(updateCommentDto.getText() != null) {
+        if (updateCommentDto.getText() != null) {
             comment.setText(updateCommentDto.getText());
         }
         comment.setLastEdited(LocalDateTime.now());
@@ -130,7 +131,20 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void deleteComment() {
+
+    public void deleteComment(Long eventId, Long commentId) {
+        log.info("Deleting comment {} for event {}", commentId, eventId);
+
+        if (!eventRepository.existsById(eventId)) {
+            throw new NotFoundException("Event not found");
+        }
+
+        if (!commentRepository.existsByIdAndEventId(commentId, eventId)) {
+            throw new NotFoundException("Comment not found");
+        }
+
+        commentRepository.deleteById(commentId);
+        log.info("Comment {} deleted", commentId);
     }
 
     @Override
@@ -145,6 +159,24 @@ public class CommentServiceImpl implements CommentService {
         }
         return commentMapper.toCommentDetailDto(comment);
     }
+
+    @Override
+    public List<CommentDto> getApprovedCommentsForEvent(Long eventId) {
+        List<Comment> comments = commentRepository.findByEventIdAndState(eventId, StateComment.APPROVED);
+        return comments.stream()
+                .map(commentMapper::toCommentDto)
+                .collect(Collectors.toList());
+    }
+
+
+    public List<CommentDto> getApprovedCommentsForEvents(List<Long> eventIds) {
+        return commentRepository.findByEventIdInAndState(eventIds, StateComment.APPROVED)
+                .stream()
+                .map(commentMapper::toCommentDto)
+                .toList();
+    }
+
+
 
     private void applyStateFilter(List<Predicate> predicates, Root<Comment> root, List<StateComment> states) {
         if (states != null && !states.isEmpty()) {
