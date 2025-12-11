@@ -25,8 +25,8 @@ public class AdminCommentController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Collection<CommentDetailDto> getCommentsByAdmin(@PathVariable @Positive Long eventId,
-                                                           @RequestParam(defaultValue = "0") Integer from,
-                                                           @RequestParam(defaultValue = "10") Integer size,
+                                                           @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                           @RequestParam(required = false, defaultValue = "10") Integer size,
                                                            @RequestParam(required = false) List<StateComment> states,
                                                            @RequestParam(required = false) List<Long> authorsIds) {
 

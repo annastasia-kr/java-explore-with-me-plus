@@ -160,7 +160,7 @@ public class CommentServiceImpl implements CommentService {
 
     private void applyEventFilter(List<Predicate> predicates, CriteriaBuilder cb, Root<Comment> root, Long id) {
         if (id != null) {
-            predicates.add(cb.equal(root.get("eventId"), id));
+            predicates.add(cb.equal(root.get("event").get("id"), id));
         }
     }
 }
