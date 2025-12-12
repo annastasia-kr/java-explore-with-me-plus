@@ -52,10 +52,10 @@ public class AdminCommentController {
 
     @PatchMapping("/{commentId}")
     @ResponseStatus(HttpStatus.OK)
-        public CommentDetailDto moderateCommentById(@PathVariable @Positive Long eventId,
-                                                    @PathVariable @Positive Long commentId,
-                                                    @Valid @RequestBody UpdateCommentDtoAdmin updateCommentDtoAdmin) {
+    public CommentDetailDto moderateCommentById(@PathVariable @Positive Long eventId,
+                                                @PathVariable @Positive Long commentId,
+                                                @Valid @RequestBody UpdateCommentDtoAdmin updateCommentDtoAdmin) {
 
-            return commentService.moderateCommentById(commentId, eventId, updateCommentDtoAdmin);
-        }
+        return commentService.moderateCommentById(commentId, eventId, updateCommentDtoAdmin);
+    }
 }

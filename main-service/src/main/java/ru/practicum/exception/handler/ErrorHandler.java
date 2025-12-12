@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import ru.practicum.exception.*;
 import ru.practicum.exception.IllegalStateException;
 
@@ -78,6 +80,22 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMissingServletRequestParameterException(
             final MissingServletRequestParameterException e) {
+        return new ErrorResponse("BAD_REQUEST");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleInvalidFormatException(
+            final InvalidFormatException e
+    ) {
+        return new ErrorResponse("BAD_REQUEST");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleHttpMessageNotReadableException(
+            final HttpMessageNotReadableException e
+    ) {
         return new ErrorResponse("BAD_REQUEST");
     }
 
