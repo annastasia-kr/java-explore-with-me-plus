@@ -23,6 +23,7 @@ public interface CommentMapper {
     @Mapping(source = "event", target = "event")
     @Mapping(target = "created", expression = "java(LocalDateTime.now())")
     @Mapping(target = "state", constant = "SUBMITTED")
+    @Mapping(target = "lastEdited", ignore = true)
     Comment toComment(CreateCommentDto createCommentDto, Event event, User author);
 
     @Mapping(source = "text", target = "text")

@@ -19,7 +19,7 @@ public class PublicCategoryController {
 
     @GetMapping
     public List<CategoryDto> findAll(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-            @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                     @RequestParam(defaultValue = "10") @Positive Integer size) {
         return service.findAll(from, size);
     }
 

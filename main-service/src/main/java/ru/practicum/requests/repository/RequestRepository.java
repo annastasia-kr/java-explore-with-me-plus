@@ -31,9 +31,9 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "WHERE r.event.id IN :eventIds " +
             "AND r.status = :status " +
             "GROUP BY r.event.id")
-List<EventResult> countByEventIdsAndStatus(
-    @Param("eventIds") List<Long> eventIds,
-    @Param("status") RequestStatus status
-);
+    List<EventResult> countByEventIdsAndStatus(
+            @Param("eventIds") List<Long> eventIds,
+            @Param("status") RequestStatus status
+    );
 
 }

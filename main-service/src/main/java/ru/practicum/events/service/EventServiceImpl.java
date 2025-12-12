@@ -41,7 +41,6 @@ import ru.practicum.users.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,7 +51,6 @@ import java.util.stream.Collectors;
 public class EventServiceImpl implements EventService {
 
     private static final String URI = "/events/";
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
@@ -74,21 +72,6 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findAllByInitiatorId(userId, page).stream()
                 .map(eventMapper::toEventShortDto)
                 .toList();
-    }
-
-    // Пункт 7: Получение списка событий с комментариями
-    public List<EventShortDto> getEventsWithComments(String text, List<Long> categories, Boolean paid,
-                                                     String rangeStart, String rangeEnd, Boolean onlyAvailable,
-                                                     String sort, Integer from, Integer size) {
-
-        log.info("Getting events with comments");
-
-        LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, FORMATTER) : null;
-        LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, FORMATTER) : null;
-
-        Pageable pageable = PageRequest.of(from / size, size);
-
-        return null;
     }
 
     @Override
@@ -190,7 +173,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
-            EventRequestStatusUpdateDto eventRequestStatusUpdateDto) {
+                                                              EventRequestStatusUpdateDto eventRequestStatusUpdateDto) {
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException("Event not found"));
         if (!event.getInitiator().getId().equals(userId)) {
@@ -256,7 +239,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Collection<EventDto> getEventsByAdmin(List<Long> users, List<StateEvent> states, List<Long> categories,
-            LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
+                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("RangeStart is not earlier than rangeEnd");
@@ -369,8 +352,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Collection<EventDto> getEventsPublic(String text, List<Long> categories, Boolean paid,
-            LocalDateTime rangeStart, LocalDateTime rangeEnd,
-            Boolean onlyAvailable, Sort sort, Integer from, Integer size, HttpServletRequest httpServletRequest) {
+                                                LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                                Boolean onlyAvailable, Sort sort, Integer from, Integer size, HttpServletRequest httpServletRequest) {
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("RangeStart is not earlier than rangeEnd");
@@ -430,10 +413,10 @@ public class EventServiceImpl implements EventService {
 
         // статистика для каждого ивента
         List<StatsDto> statistics = statsClient.getStats(minStartDate, LocalDateTime.now(),
-               (eventIds.stream()
+                        (eventIds.stream()
                                 .map(id -> URI + id)
                                 .toList()), true).stream()
-                        .toList();
+                .toList();
 
         Map<String, Long> hits = statistics.stream()
                 .collect(Collectors.toMap(
@@ -456,10 +439,9 @@ public class EventServiceImpl implements EventService {
                             : 0L;
                     Long views = eventsIdWithHits.getOrDefault(event.getId(), 0L);
 
-                    // Создаём DTO
                     EventDto eventDto = eventMapper.toEventDto(event, confirmedRequests, views);
 
-                    // 4. Добавляем комментарии из Map (если есть)
+                    // Добавляем комментарии
                     List<CommentDto> comments = commentsByEventId.getOrDefault(event.getId(), List.of());
                     eventDto.setComments(comments);
 
@@ -487,7 +469,8 @@ public class EventServiceImpl implements EventService {
         List<CommentDto> comments = commentService.getApprovedCommentsForEvent(eventId);
         EventDto eventDto = eventMapper.toEventDto(event, confirmedRequests, views);
         eventDto.setComments(comments);
-        return eventDto;
+
+        return eventMapper.toEventDto(event, confirmedRequests, views);
     }
 
     private Location getEventLocation(LocationDto locationDto) {
@@ -496,7 +479,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void applyDateRangeFilter(List<Predicate> predicates, CriteriaBuilder cb, Root<Event> root,
-            LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+                                      LocalDateTime rangeStart, LocalDateTime rangeEnd) {
         predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"),
                 Objects.requireNonNullElseGet(rangeStart, LocalDateTime::now)));
         if (rangeEnd != null) {
@@ -511,7 +494,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void applyStateFilter(List<Predicate> predicates, Root<Event> root,
-            List<StateEvent> states) {
+                                  List<StateEvent> states) {
         if (states != null && !states.isEmpty()) {
             predicates.add(root.get("state").in(states));
         }
