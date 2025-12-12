@@ -6,6 +6,7 @@ import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.NullValueMappingStrategy;
 import ru.practicum.categories.mapper.CategoryMapper;
 import ru.practicum.categories.model.Category;
+import ru.practicum.comments.mapper.CommentMapper;
 import ru.practicum.events.dto.EventDto;
 import ru.practicum.events.dto.EventShortDto;
 import ru.practicum.events.dto.NewEventDto;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 
 @Mapper(componentModel = "spring",
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL,
-        imports = {LocalDateTime.class, StateEvent.class},
+        imports = {LocalDateTime.class, StateEvent.class, CommentMapper.class},
         uses = {CategoryMapper.class, UserMapper.class, LocationMapper.class})
 public interface EventMapper {
 
@@ -40,7 +41,7 @@ public interface EventMapper {
     @Mapping(source = "event.location", target = "location")
     @Mapping(source = "confirmedRequests", target = "confirmedRequests")
     @Mapping(source = "views", target = "views")
-    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "comments", ignore = true, defaultValue = "new java.util.ArrayList<>()")
     EventDto toEventDto(Event event, Long confirmedRequests, Long views);
 
     @Mapping(source = "category", target = "category")
@@ -53,7 +54,6 @@ public interface EventMapper {
     @Mapping(source = "paid", target = "paid")
     @Mapping(source = "participantLimit", target = "participantLimit")
     @Mapping(target = "views", constant = "0L")
-    @Mapping(target = "comments", ignore = true)
     EventShortDto toEventShortDto(Event event);
 
 }

@@ -470,7 +470,7 @@ public class EventServiceImpl implements EventService {
         EventDto eventDto = eventMapper.toEventDto(event, confirmedRequests, views);
         eventDto.setComments(comments);
 
-        return eventMapper.toEventDto(event, confirmedRequests, views);
+        return eventDto;
     }
 
     private Location getEventLocation(LocationDto locationDto) {
