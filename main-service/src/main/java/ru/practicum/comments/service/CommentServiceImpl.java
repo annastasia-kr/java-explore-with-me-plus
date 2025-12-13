@@ -126,12 +126,11 @@ public class CommentServiceImpl implements CommentService {
             comment.setText(updateCommentDto.getText());
         }
         comment.setLastEdited(LocalDateTime.now());
-        return commentMapper.toCommentDetailDto(commentRepository.save(comment));
+        return commentMapper.toCommentDetailDto(comment);
     }
 
     @Override
     @Transactional
-
     public void deleteComment(Long eventId, Long commentId) {
         log.info("Deleting comment {} for event {}", commentId, eventId);
 

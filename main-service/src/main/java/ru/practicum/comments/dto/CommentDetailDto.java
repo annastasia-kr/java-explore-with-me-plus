@@ -27,5 +27,5 @@ public class CommentDetailDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastEdited;
 
-    StateComment state;
+    private StateComment state;
 }
